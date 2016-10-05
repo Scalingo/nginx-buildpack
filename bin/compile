@@ -37,7 +37,7 @@ VENDORED_NGINX=/app/vendor/nginx
 status "Bundling NGINX ${NGINX_VERSION}"
 fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
 
-test ! -d ".profile.d" && mkdir -p .profile.d || true
+test ! -d "$BUILD_DIR/.profile.d" && mkdir -p "$BUILD_DIR/.profile.d" || true
 
 cat > ".profile.d/nginx.sh" <<SH
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:${VENDORED_NGINX}/sbin:/app/vendor/bin:\$PATH
