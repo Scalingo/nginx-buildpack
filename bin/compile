@@ -1,0 +1,87 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+shopt -s dotglob
+
+if [ -n "$BUILDPACK_DEBUG" ]; then
+    set -x
+fi
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source $basedir/common.sh
+
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+export_env_dir "$3"
+
+NGINX_VERSION=${NGINX_VERSION:-1.10.1}
+SWIFT_BUCKET=${NGINX_BP_SWIFT_BUCKET:-scalingo-php-buildpack}
+SWIFT_BASE_URL=${NGINX_BP_SWIFT_URL:-https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2}
+SWIFT_URL="${SWIFT_BASE_URL}/${SWIFT_BUCKET}"
+LOG_FILES=(vendor/nginx/logs/access.log vendor/nginx/logs/error.log)
+
+mkdir -p "$CACHE_DIR/package"
+
+# Download jq binary for JSON processing
+mkdir -p $BUILD_DIR/bin
+export PATH="$BUILD_DIR/bin:$PATH"
+curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
+chmod +x "$BUILD_DIR/bin/jq"
+
+if [ ! -d "$BUILD_DIR/vendor" ] ; then
+  mkdir -p "$BUILD_DIR/vendor"
+fi
+
+VENDORED_NGINX=/app/vendor/nginx
+status "Bundling NGINX ${NGINX_VERSION}"
+fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
+
+test ! -d ".profile.d" && mkdir -p .profile.d || true
+
+cat > ".profile.d/nginx.sh" <<SH
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:${VENDORED_NGINX}/sbin:/app/vendor/bin:\$PATH
+export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
+SH
+
+source ".profile.d/nginx.sh"
+
+cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
+
+mv /app/vendor/nginx "$BUILD_DIR/vendor/nginx"
+
+mkdir -p "bin"
+
+cat > "$BUILD_DIR/bin/run" <<SH
+#!/usr/bin/env bash
+
+basedir="\$( cd -P "\$(dirname \$(dirname "\$0" ))" && pwd )"
+pmsgr=/tmp/pmsgr
+rm -f \$pmsgr
+mkfifo \$pmsgr
+
+erb base_nginx.conf.erb > "\$basedir/vendor/nginx/conf/nginx.conf"
+
+if [ -f "\$basedir/nginx.conf.erb" ] ; then
+  erb "\$basedir/nginx.conf.erb" > "\$basedir/vendor/nginx/conf/site.conf"
+elif [ -f \$basedir/nginx.conf ] ; then
+  cp "\$basedir/nginx.conf" "\$basedir/vendor/nginx/conf/site.conf"
+else
+  echo 'nginx.conf or nginx.conf.erb should be located at the root of the project'
+  exit 1
+fi
+
+`init_log_plex ${LOG_FILES[@]}`
+`tail_log_plex ${LOG_FILES[@]}`
+
+(
+    nginx -p "\$basedir/vendor/nginx" -c "\$basedir/vendor/nginx/conf/nginx.conf"
+    echo "nginx" > \$pmsgr
+) &
+
+read exitproc <\$pmsgr
+echo "Boot failed: \$exitproc"
+exit 1
+SH
+
+chmod +x "$BUILD_DIR/bin/run"
