@@ -39,12 +39,12 @@ fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
 
 test ! -d "$BUILD_DIR/.profile.d" && mkdir -p "$BUILD_DIR/.profile.d" || true
 
-cat > ".profile.d/nginx.sh" <<SH
+cat > "$BUILD_DIR/.profile.d/nginx.sh" <<SH
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:${VENDORED_NGINX}/sbin:/app/vendor/bin:\$PATH
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
-source ".profile.d/nginx.sh"
+source "$BUILD_DIR/.profile.d/nginx.sh"
 
 cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
 
