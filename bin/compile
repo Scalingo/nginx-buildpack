@@ -26,12 +26,8 @@ DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}
 NGINX_VERSION=${NGINX_VERSION:-$DEFAULT_NGINX}
 
 mkdir -p "$CACHE_DIR/package"
-
-# Download jq binary for JSON processing
 mkdir -p $BUILD_DIR/bin
 export PATH="$BUILD_DIR/bin:$PATH"
-curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
-chmod +x "$BUILD_DIR/bin/jq"
 
 if [ ! -d "$BUILD_DIR/vendor" ] ; then
   mkdir -p "$BUILD_DIR/vendor"
@@ -64,10 +60,14 @@ pmsgr=/tmp/pmsgr
 rm -f \$pmsgr
 mkfifo \$pmsgr
 
+[ -f \$basedir/servers.conf.erb ] && export HAS_SERVER_CONF=true
+
 erb base_nginx.conf.erb > "\$basedir/vendor/nginx/conf/nginx.conf"
 
 if [ -f "\$basedir/nginx.conf.erb" ] ; then
   erb "\$basedir/nginx.conf.erb" > "\$basedir/vendor/nginx/conf/site.conf"
+elif [ -f \$basedir/servers.conf.erb ] ; then
+  erb "\$basedir/servers.conf.erb" > "\$basedir/vendor/nginx/conf/servers.conf"
 elif [ -f \$basedir/nginx.conf ] ; then
   cp "\$basedir/nginx.conf" "\$basedir/vendor/nginx/conf/site.conf"
 else

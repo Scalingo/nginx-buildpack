@@ -64,6 +64,9 @@ http {
       text/x-component;
     # text/html is always compressed by HttpGzipModule
 
+    <% if ENV['HAS_SERVER_CONF'] %>
+      include servers.conf;
+    <% else %>
     server {
         server_name localhost;
         listen <%= ENV['PORT'] %>;
@@ -71,4 +74,5 @@ http {
         charset utf-8;
         include site.conf;
     }
+    <% end %>
 }
