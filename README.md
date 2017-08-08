@@ -56,6 +56,6 @@ how to configure your app.
 
 ## Advanced informations
 
-The documentation file you have to provide is at the `system` level, if you need
-to add something at the `http` level, please open an issue or a pull request and
-we'll discuss it.
+The configuration file you have to provide is at the `system` level, if you need
+to add something at the `http` level, please open an [issue](https://github.com/Scalingo/nginx-buildpack/issues/new)
+or a [pull request](https://github.com/Scalingo/nginx-buildpack/pulls/new) and we'll discuss it.
