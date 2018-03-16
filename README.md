@@ -24,6 +24,10 @@ which can be:
 If the template is found, it will be rendered as configuration file, it let you use environment
 variables as in the following examples.
 
+## Discouraged Directives
+
+The following directives should not be used in you configuration file: `listen`, `access_log`, `error_log` and `server_name`.
+
 ## Configuration examples
 
 ### Split traffic to 2 APIs
