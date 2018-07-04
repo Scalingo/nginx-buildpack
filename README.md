@@ -60,6 +60,12 @@ how to configure your app.
 
 ## Configuration Examples (`servers.conf.erb`)
 
+When using this configuration method, the previous one won't be considered,
+they are exclusive.
+
+
+###  Setup throttling with a `limit_req_zone`
+
 ```
 # instruction at the http level like
 limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
@@ -71,7 +77,31 @@ server {
     charset utf-8;
     location {
         limit_req zone=one burst=5;
-        proxy_pass <%= ENV["API_V1_BACKEND"] %>;
+        proxy_pass http://<%= ENV["API_V1_BACKEND"] %>;
+    }
+}
+```
+
+### Multiple domains configuration
+
+```
+server {
+    server_name front.example.com;
+    listen <%= ENV['PORT'] %>;
+
+    charset utf-8;
+    location {
+        proxy_pass http://<%= ENV["FRONT_BACKEND"] %>;
+    }
+}
+
+server {
+    server_name api.example.com;
+    listen <%= ENV['PORT'] %>;
+
+    charset utf-8;
+    location {
+        proxy_pass http://<%= ENV["API_BACKEND"] %>;
     }
 }
 ```
