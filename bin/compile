@@ -5,7 +5,7 @@ set -o pipefail
 shopt -s dotglob
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
