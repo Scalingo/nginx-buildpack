@@ -29,51 +29,45 @@ indent() {
 }
 
 export_env_dir() {
-    env_dir=$1
-    blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LD_LIBRARY_PATH)$'}
-    if [ -d "$env_dir" ]; then
-        for e in $(ls $env_dir); do
-            echo "$e" | grep -qvE "$blacklist_regex" &&
-            export "$e=$(cat $env_dir/$e)"
-            :
-        done
-    fi
+  env_dir=$1
+  blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LD_LIBRARY_PATH)$'}
+  if [ -d "$env_dir" ]; then
+    for e in $(ls $env_dir); do
+      echo "$e" | grep -qvE "$blacklist_regex" &&
+      export "$e=$(cat $env_dir/$e)"
+      :
+    done
+  fi
 }
 
 function fetch_engine_package() {
-    local engine="$1"
-    local version="$2"
-    local location="$3"
+  local engine="$1"
+  local version="$2"
+  local location="$3"
+  local package="${engine}-${version}"
 
-    fetch_package "${engine}-${version}" "$location"
-}
+  mkdir -p "$location"
 
-function fetch_package() {
-    local package="$1"
-    local location="$2"
+  local checksum_url="${SWIFT_URL}/package/${package}.md5"
+  local package_url="${SWIFT_URL}/package/${package}.tgz"
+  local checksum=$(curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$checksum_url" 2> /dev/null)
+  local cache_checksum=""
 
-    mkdir -p "$location"
+  if [ -f "$CACHE_DIR/package/${package}.md5" ]; then
+    local cache_checksum=$(cat "$CACHE_DIR/package/${package}.md5")
+  fi
 
-    local checksum_url="${SWIFT_URL}/package/${package}.md5"
-    local package_url="${SWIFT_URL}/package/${package}.tgz"
-    local checksum=$(curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$checksum_url" 2> /dev/null)
-    local cache_checksum=""
+  mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
 
-    if [ -f "$CACHE_DIR/package/${package}.md5" ]; then
-        local cache_checksum=$(cat "$CACHE_DIR/package/${package}.md5")
-    fi
+  if [ "$cache_checksum" != "$checksum" ]; then
+    curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$package_url" -L -s > "$CACHE_DIR/package/${package}.tgz"
+    echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
+  else
+    echo "Checksums match. Fetching from cache."
+  fi
 
-    mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
-
-    if [ "$cache_checksum" != "$checksum" ]; then
-        curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$package_url" -L -s > "$CACHE_DIR/package/${package}.tgz"
-        echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
-    else
-        echo "Checksums match. Fetching from cache."
-    fi
-
-    mkdir -p "$location"
-    tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
+  mkdir -p "$location"
+  tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
 init_log_plex() {
