@@ -1,10 +1,10 @@
-Scalingo Nginx buildpack
+Scalingo Nginx Buildpack
 ========================
 
 This buildpack aims at installing a nginx instance and let you configure it at
 your convenance.
 
-## Defining the version
+## Defining the Version
 
 By default we're installing the latest available version of Nginx, but if you
 want to use a specific version, you can define the environment variable `NGINX_VERSION`
@@ -28,9 +28,9 @@ variables as in the following examples.
 
 The following directives should not be used in you configuration file: `listen`, `access_log`, `error_log` and `server_name`.
 
-## Configuration examples
+## Configuration Examples
 
-### Split traffic to 2 APIs
+### Split Traffic to 2 APIs
 
 ```
 location /api/v1 {
@@ -58,7 +58,7 @@ Use nginx configuration:
 [https://nginx.org/en/docs/](https://nginx.org/en/docs/) to get details about
 how to configure your app.
 
-## Advanced informations
+## Advanced Information
 
 The configuration file you have to provide is at the `server` level, if you need
 to add something at the `http` level, please open an [issue](https://github.com/Scalingo/nginx-buildpack/issues/new)

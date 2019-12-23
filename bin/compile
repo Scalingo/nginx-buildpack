@@ -5,7 +5,7 @@ set -o pipefail
 shopt -s dotglob
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
@@ -18,7 +18,8 @@ export_env_dir "$3"
 NGINX_VERSION=${NGINX_VERSION:-1.10.1}
 SWIFT_BUCKET=${NGINX_BP_SWIFT_BUCKET:-scalingo-php-buildpack}
 SWIFT_BASE_URL=${NGINX_BP_SWIFT_URL:-https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2}
-SWIFT_URL="${SWIFT_BASE_URL}/${SWIFT_BUCKET}"
+STACK="${STACK:-scalingo-18}"
+SWIFT_URL="${SWIFT_BASE_URL}/${SWIFT_BUCKET}/${STACK}"
 LOG_FILES=(vendor/nginx/logs/access.log vendor/nginx/logs/error.log)
 
 mkdir -p "$CACHE_DIR/package"
