@@ -15,7 +15,7 @@ BUILD_DIR="$1"
 CACHE_DIR="$2"
 export_env_dir "$3"
 
-NGINX_VERSION=${NGINX_VERSION:-1.10.1}
+NGINX_VERSION=${NGINX_VERSION:-1.17.6}
 SWIFT_BUCKET=${NGINX_BP_SWIFT_BUCKET:-scalingo-php-buildpack}
 SWIFT_BASE_URL=${NGINX_BP_SWIFT_URL:-https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2}
 STACK="${STACK:-scalingo-18}"
