@@ -16,7 +16,7 @@ CACHE_DIR="$2"
 export_env_dir "$3"
 
 SWIFT_BUCKET=${NGINX_BP_SWIFT_BUCKET:-scalingo-php-buildpack}
-SWIFT_BASE_URL=${NGINX_BP_SWIFT_URL:-https://storage.sbg.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2}
+SWIFT_BASE_URL=${NGINX_BP_SWIFT_URL:-https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2}
 STACK="${STACK:-scalingo-18}"
 SWIFT_URL="${SWIFT_BASE_URL}/${SWIFT_BUCKET}/${STACK}"
 LOG_FILES=(vendor/nginx/logs/access.log vendor/nginx/logs/error.log)
