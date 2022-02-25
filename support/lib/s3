@@ -1,0 +1,15 @@
+# vim:set ft=sh:
+
+s3_upload() {
+  file="$1"
+  s3cmd --access_key="${S3_ACCESS_KEY}" --secret_key="${S3_SECRET_KEY}" --verbose --acl-public put "${file}" "s3://${S3_BUCKET}/${STACK}/${file}"
+}
+
+s3_download() {
+  file="$1"
+  s3cmd --access_key="${S3_ACCESS_KEY}" --secret_key="${S3_SECRET_KEY}" --verbose get "s3://${S3_BUCKET}/${STACK}/${file}"
+}
+
+s3_list() {
+  s3cmd --access_key="${S3_ACCESS_KEY}" --secret_key="${S3_SECRET_KEY}" ls --recursive "s3://${S3_BUCKET}/${STACK}/package/"
+}

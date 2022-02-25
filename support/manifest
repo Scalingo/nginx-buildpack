@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+manifest_type="$1"
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/lib/output"
+source "$basedir/lib/utils"
+source "$basedir/lib/s3"
+
+if [ -z "$manifest_type" ]; then
+    echo "Usage: $0 <nginx>" >&2
+    exit 1
+fi
+
+validate_env
+
+# make a temp directory
+tempdir=$(mktmpdir manifest)
+pushd $tempdir > /dev/null
+
+echo "-----> Manifest for $manifest_type"
+
+s3_list ${S3_BUCKET} \
+    | awk '{print $4}' \
+    | sed "s/^.\+$STACK\/package\///" \
+    | grep "\.tgz$" \
+    | grep "^${manifest_type}" \
+    | grep -v -e ".md5" \
+    | sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
+    | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' \
+    | sort -r \
+    | cut -d" " -f2 \
+    > manifest.${manifest_type}
+
+cat "manifest.${manifest_type}" | indent
+
+echo
+echo "-----> Uploading manifest for ${manifest_type} to S3"
+
+s3_upload manifest.${manifest_type}

@@ -1,6 +1,10 @@
 worker_processes auto;
 daemon off;
 
+<% if ENV["ENABLE_MODSECURITY"] %>
+load_module modules/ngx_http_modsecurity_module.so;
+<% end %>
+
 events {
     worker_connections  1024;
 }
