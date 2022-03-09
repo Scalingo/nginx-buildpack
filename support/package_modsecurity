@@ -68,7 +68,7 @@ tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 ar x liblua5.3-dev_${lua_version}_amd64.deb
 tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 
-echo "-----> Downloading modsecurity"
+echo "-----> Downloading ModSecurity"
 curl --remote-name --location "$MODSECURITY_URL"
 tar --extract --ungzip --verbose --file "$MODSECURITY_TARBALL"
 pushd "$MODSECURITY_DIR" >/dev/null
