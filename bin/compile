@@ -50,7 +50,7 @@ source "$BUILD_DIR/.profile.d/nginx.sh"
 cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
 mv /app/vendor/nginx "$BUILD_DIR/vendor"
 
-if [ "$ENABLE_MODSECURITY" ] ; then
+if [ "$ENABLE_MODSECURITY" = "true" ] ; then
   VENDORED_MODSECURITY=/app/vendor/modsecurity
   fetch_engine_package modsecurity "$MODSECURITY_VERSION" "${VENDORED_MODSECURITY}" | indent
 
