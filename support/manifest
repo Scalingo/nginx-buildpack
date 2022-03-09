@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 
+# This file generates a manifest for a given type of package
+# Exemple "./manifest nginx"
+#
+# 1. List all files in S3 bucket in /$STACK/package/nginx*.tgz
+# 2. Create a file "manifest.nginx"
+# 3. Upload "manifest.nginx" in the object storage
+#
+# Why? So tools like semver are able to check which versions are available to
+# use and when a new version is released it can be automatically taken into account
+
 manifest_type="$1"
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/lib/output"
+source "$basedir/../bin/common.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/s3"
 

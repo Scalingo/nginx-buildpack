@@ -5,10 +5,10 @@
 set -e -o pipefail
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../bin/common.sh"
+source "$basedir/../config/versions.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/output"
-source "$basedir/lib/s3"
-source "$basedir/../config/versions.sh"
 
 validate_env
 
@@ -23,7 +23,7 @@ cd $tempdir
 install_dir="/app/vendor/modsecurity"
 mkdir -p "$install_dir"
 
-echo "-----> Packaging libgeoip"
+status "Packaging libgeoip"
 geoip_version="1.6.12-6build1"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip-dev_${geoip_version}_amd64.deb"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip1_${geoip_version}_amd64.deb"
@@ -32,7 +32,7 @@ tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 ar x libgeoip1_${geoip_version}_amd64.deb
 tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 
-echo "-----> Packaging libyajl"
+status "Packaging libyajl"
 yajl_version="2.1.0-3"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl-dev_${yajl_version}_amd64.deb"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl2_${yajl_version}_amd64.deb"
@@ -41,7 +41,7 @@ tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 ar x libyajl2_${yajl_version}_amd64.deb
 tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 
-echo "-----> Packaging liblmdb"
+status "ackaging liblmdb"
 lmdb_version="0.9.24-1"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lmdb/liblmdb-dev_${lmdb_version}_amd64.deb"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lmdb/liblmdb0_${lmdb_version}_amd64.deb"
@@ -50,7 +50,7 @@ tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 ar x liblmdb0_${lmdb_version}_amd64.deb
 tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 
-echo "-----> Packaging ssdeep (libfuzzy)"
+status "Packaging ssdeep (libfuzzy)"
 libfuzzy_version="2.14.1+git20180629.57fcfff-1build1"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version}_amd64.deb"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version}_amd64.deb"
@@ -59,7 +59,7 @@ tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 ar x libfuzzy-dev_${libfuzzy_version}_amd64.deb
 tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 
-echo "-----> Packaging Lua (liblua5.1)"
+status "Packaging Lua (liblua5.1)"
 lua_version="5.3.3-1.1ubuntu2"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-0_${lua_version}_amd64.deb"
 curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-dev_${lua_version}_amd64.deb"
@@ -68,7 +68,7 @@ tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 ar x liblua5.3-dev_${lua_version}_amd64.deb
 tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
 
-echo "-----> Downloading ModSecurity"
+status "Downloading ModSecurity"
 curl --remote-name --location "$MODSECURITY_URL"
 tar --extract --ungzip --verbose --file "$MODSECURITY_TARBALL"
 pushd "$MODSECURITY_DIR" >/dev/null
@@ -89,7 +89,7 @@ pushd "$MODSECURITY_DIR" >/dev/null
   make install
 popd >/dev/null
 
-echo "-----> Uploading package to S3 ${S3_URL}/package/modsecurity-${MODSECURITY_VERSION}.tgz"
+status "Uploading package to S3 ${S3_URL}/package/modsecurity-${MODSECURITY_VERSION}.tgz"
 mkdir package
 pushd /app/vendor/modsecurity >/dev/null
   tar zcvf "${tempdir}/package/modsecurity-${MODSECURITY_VERSION}.tgz" .
@@ -99,4 +99,4 @@ s3_upload package/modsecurity-${MODSECURITY_VERSION}.tgz
 "$basedir/manifest" modsecurity
 "$basedir/package-checksum" "modsecurity-${MODSECURITY_VERSION}"
 
-echo "-----> Done building ModsSecurity package!"
+status "Done building ModsSecurity package!"
