@@ -25,6 +25,7 @@ SEMVER_SERVER="https://semver.scalingo.io"
 DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
 NGINX_VERSION=${NGINX_VERSION:-$DEFAULT_NGINX}
 MODSECURITY_VERSION=${MODSECURITY_VERSION:-$default_modsecurity_version}
+MODSECURITY_CORE_RULE_SET_VERSION="${MODSECURITY_CORE_RULE_SET_VERSION:-$default_modsecurity_coreruleset_version}"
 
 mkdir -p "$CACHE_DIR/package"
 mkdir -p $BUILD_DIR/bin
@@ -59,8 +60,15 @@ if [ "$ENABLE_MODSECURITY" = "true" ] ; then
 SH
   mv /app/vendor/modsecurity "$BUILD_DIR/vendor"
 
+  status "Downloading latest CoreRuleSet ModSecurity protection rules"
+  crs_url="https://github.com/coreruleset/coreruleset"
+  curl --location --silent "${crs_url}/archive/refs/tags/v${MODSECURITY_CORE_RULE_SET_VERSION}.tar.gz" | tar -C "$BUILD_DIR/vendor/nginx/conf" -xzf -
+  mv "$BUILD_DIR/vendor/nginx/conf/coreruleset-${MODSECURITY_CORE_RULE_SET_VERSION}" "$BUILD_DIR/vendor/nginx/conf/crs"
+
   cp "$basedir/../config/modsec/unicode.mapping" "$BUILD_DIR/vendor/nginx/conf"
   cp "$basedir/../config/modsec/modsecurity.conf" "$BUILD_DIR/vendor/nginx/conf"
+  cp "$basedir/../config/modsec/modsec-nginx.conf" "$BUILD_DIR/vendor/nginx/conf"
+  cp "$basedir/../config/modsec/crs-config.conf" "$BUILD_DIR/vendor/nginx/conf"
 fi
 
 mkdir -p "bin"

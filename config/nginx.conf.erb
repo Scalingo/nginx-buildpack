@@ -68,6 +68,11 @@ http {
       text/x-component;
     # text/html is always compressed by HttpGzipModule
 
+    <% if ENV['ENABLE_MODSECURITY'] %>
+      modsecurity on;
+      modsecurity_rules_file "/app/vendor/nginx/conf/modsec-nginx.conf";
+    <% end %>
+
     <% if ENV['HAS_SERVER_CONF'] %>
       include servers.conf;
     <% else %>
