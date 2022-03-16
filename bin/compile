@@ -57,6 +57,7 @@ if [ "$ENABLE_MODSECURITY" = "true" ] ; then
 
   cat > "$BUILD_DIR/.profile.d/modsecurity.sh" <<SH
   export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HOME/vendor/modsecurity/usr/lib/x86_64-linux-gnu:\$HOME/vendor/modsecurity/lib
+  erb "\$HOME/vendor/nginx/conf/modsecurity.conf.erb" > "\$HOME/vendor/nginx/conf/modsecurity.conf"
 SH
   mv /app/vendor/modsecurity "$BUILD_DIR/vendor"
 
@@ -66,7 +67,7 @@ SH
   mv "$BUILD_DIR/vendor/nginx/conf/coreruleset-${MODSECURITY_CORE_RULE_SET_VERSION}" "$BUILD_DIR/vendor/nginx/conf/crs"
 
   cp "$basedir/../config/modsec/unicode.mapping" "$BUILD_DIR/vendor/nginx/conf"
-  cp "$basedir/../config/modsec/modsecurity.conf" "$BUILD_DIR/vendor/nginx/conf"
+  cp "$basedir/../config/modsec/modsecurity.conf.erb" "$BUILD_DIR/vendor/nginx/conf"
   cp "$basedir/../config/modsec/modsec-nginx.conf" "$BUILD_DIR/vendor/nginx/conf"
   cp "$basedir/../config/modsec/crs-config.conf" "$BUILD_DIR/vendor/nginx/conf"
 fi

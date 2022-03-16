@@ -228,9 +228,8 @@ SecDataDir /tmp/
 # The default debug log configuration is to duplicate the error, warning
 # and notice messages from the error log.
 #
-#SecDebugLog /opt/modsecurity/var/log/debug.log
-#SecDebugLogLevel 3
-
+SecDebugLog <%= ENV["MODSECURITY_DEBUG_LOG_PATH"] || "/dev/stderr" %>
+SecDebugLogLevel <%= ENV["MODSECURITY_DEBUG_LOG_LEVEL"] || 0 %>
 
 # -- Audit log configuration -------------------------------------------------
 
@@ -238,7 +237,11 @@ SecDataDir /tmp/
 # trigger a server error (determined by a 5xx or 4xx, excluding 404,
 # level response status codes).
 #
-SecAuditEngine RelevantOnly
+<% if ENV["MODSECURITY_AUDIT_LOG_LEVEL"] %>
+SecAuditEngine <%= ENV["MODSECURITY_AUDIT_LOG_LEVEL"] %>
+<% else %>
+SecAuditEngine Off
+<% end %>
 SecAuditLogRelevantStatus "^(?:5|4(?!04))"
 
 # Log everything we know about a transaction.
@@ -248,7 +251,7 @@ SecAuditLogParts ABIJDEFHZ
 # assumes that you will use the audit log only ocassionally.
 #
 SecAuditLogType Serial
-SecAuditLog /dev/stderr
+SecAuditLog <%= ENV["MODSECURITY_AUDIT_LOG_PATH"] || "/dev/stderr" %>
 
 # Specify the path for concurrent audit logging.
 #SecAuditLogStorageDir /opt/modsecurity/var/audit/
