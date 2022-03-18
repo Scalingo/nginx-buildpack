@@ -14,6 +14,7 @@ source "$basedir/lib/s3.lib.sh"
 source "$basedir/../config/versions.sh"
 
 # Binding between modsecurity and nginx (since modsecurity can be used as standalone or with apache for instance)
+MODSECURITY_VERSION=${MODSECURITY_VERSION:-$default_modsecurity_version}
 MODSECURITY_NGINX_VERSION="v1.0.2"
 MODSECURITY_NGINX_DIR="modsecurity-nginx-${MODSECURITY_NGINX_VERSION}"
 MODSECURITY_NGINX_TARBALL="${MODSECURITY_NGINX_DIR}.tar.gz"
@@ -53,11 +54,21 @@ s3_download "$S3_BUCKET" "/${STACK}/zlib/${zlib_filename}" "$zlib_filename"
 tar -xzvf "$zlib_filename"
 
 if [ "NO_MODSECURITY_MODULE" != "true" ] ; then
+  modsecurity_filename="modsecurity-${MODSECURITY_VERSION}.tgz"
+  s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename"
+  modsecurity_dir="/app/vendor/modsecurity"
+  mkdir -p "$modsecurity_dir"
+  tar --extract --ungzip --verbose --file "$modsecurity_filename" --directory "$modsecurity_dir"
+  # Required for nginx compilation with modsecurity-nginx module
+  export MODSECURITY_INC="${modsecurity_dir}/include"
+  export MODSECURITY_LIB="${modsecurity_dir}/lib"
+
   echo "---> Installing modsecurity-nginx"
   curl --remote-name --location "$MODSECURITY_NGINX_URL"
   tar --extract --ungzip --verbose --file "$MODSECURITY_NGINX_TARBALL"
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
+
 fi
 
 echo "-----> Downloading NGINX ${nginx_version}"
