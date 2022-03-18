@@ -15,7 +15,7 @@ manifest_type="$1"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../bin/common.sh"
 source "$basedir/lib/utils"
-source "$basedir/lib/s3"
+source "$basedir/lib/s3.lib.sh"
 
 if [ -z "$manifest_type" ]; then
     echo "Usage: $0 <nginx>" >&2
@@ -30,7 +30,7 @@ pushd $tempdir > /dev/null
 
 echo "-----> Manifest for $manifest_type"
 
-s3_list ${S3_BUCKET} \
+s3_list "$S3_BUCKET" "/${STACK}/package/" \
     | awk '{print $4}' \
     | sed "s/^.\+$STACK\/package\///" \
     | grep "\.tgz$" \
@@ -47,4 +47,5 @@ cat "manifest.${manifest_type}" | indent
 echo
 echo "-----> Uploading manifest for ${manifest_type} to S3"
 
-s3_upload manifest.${manifest_type}
+manifest_filename="manifest.${manifest_type}"
+s3_upload "$S3_BUCKET" "$manifest_filename" "/${STACK}/${manifest_filename}"

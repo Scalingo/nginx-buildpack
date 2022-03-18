@@ -10,7 +10,7 @@ set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/lib/utils"
-source "$basedir/lib/s3"
+source "$basedir/lib/s3.lib.sh"
 source "$basedir/../config/versions.sh"
 
 # Binding between modsecurity and nginx (since modsecurity can be used as standalone or with apache for instance)
@@ -48,8 +48,9 @@ tar -xzvf "pcre-${pcre_version}.tar.gz"
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 
-s3_download "zlib/zlib-${zlib_version}.tar.gz"
-tar -xzvf "zlib-${zlib_version}.tar.gz"
+zlib_filename="zlib-${zlib_version}.tar.gz"
+s3_download "$S3_BUCKET" "/${STACK}/zlib/${zlib_filename}" "$zlib_filename"
+tar -xzvf "$zlib_filename"
 
 if [ "NO_MODSECURITY_MODULE" != "true" ] ; then
   echo "---> Installing modsecurity-nginx"
@@ -80,11 +81,12 @@ popd > /dev/null
 
 echo "-----> Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
 mkdir package
+nginx_filepath="package/nginx-${nginx_version}.tgz"
 pushd /app/vendor/nginx >/dev/null
-tar zcvf "${tempdir}/package/nginx-${nginx_version}.tgz" .
+tar zcvf "${tempdir}/${nginx_filepath}" .
 popd >/dev/null
 
-s3_upload package/nginx-${nginx_version}.tgz
+s3_upload "$S3_BUCKET" "$nginx_filepath" "/${STACK}/${nginx_filepath}"
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"
 

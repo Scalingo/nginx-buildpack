@@ -4,7 +4,7 @@ set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/lib/utils"
-source "$basedir/lib/s3"
+source "$basedir/lib/s3.lib.sh"
 
 validate_env
 
@@ -14,8 +14,8 @@ cd $(mktmpdir swift)
 
 echo "-----> Creating checksum for ${package}"
 
-s3_download "package/${package}.tgz"
+s3_download "${S3_BUCKET}" "/${STACK}/package/${package}.tgz" "package/${package}.tgz"
 
 mkdir -p ./package
 md5 "${package}.tgz" > "package/${package}.md5"
-s3_upload "package/${package}.md5"
+s3_upload "${S3_BUCKET}" "package/${package}.md5" "/${STACK}/package/${package}.md5"

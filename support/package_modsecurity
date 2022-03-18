@@ -9,6 +9,7 @@ source "$basedir/../bin/common.sh"
 source "$basedir/../config/versions.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/output"
+source "$basedir/lib/s3.lib.sh"
 
 validate_env
 
@@ -90,12 +91,13 @@ pushd "$MODSECURITY_DIR" >/dev/null
 popd >/dev/null
 
 status "Uploading package to S3 ${S3_URL}/package/modsecurity-${MODSECURITY_VERSION}.tgz"
+package_filepath="package/modsecurity-${MODSECURITY_VERSION}.tgz"
 mkdir package
 pushd /app/vendor/modsecurity >/dev/null
-  tar zcvf "${tempdir}/package/modsecurity-${MODSECURITY_VERSION}.tgz" .
+  tar zcvf "${tempdir}/${package_filepath}" .
 popd >/dev/null
 
-s3_upload package/modsecurity-${MODSECURITY_VERSION}.tgz
+s3_upload "$S3_BUCKET" "${package_filepath}" "/${STACK}/${package_filepath}"
 "$basedir/manifest" modsecurity
 "$basedir/package-checksum" "modsecurity-${MODSECURITY_VERSION}"
 
