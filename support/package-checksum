@@ -10,11 +10,11 @@ validate_env
 
 package="$1"
 
-cd $(mktmpdir swift)
+cd $(mktmpdir nginx-md5)
 
 echo "-----> Creating checksum for ${package}"
 
-s3_download "${S3_BUCKET}" "/${STACK}/package/${package}.tgz" "package/${package}.tgz"
+s3_download "${S3_BUCKET}" "/${STACK}/package/${package}.tgz" "${package}.tgz"
 
 mkdir -p ./package
 md5 "${package}.tgz" > "package/${package}.md5"
