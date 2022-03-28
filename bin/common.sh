@@ -48,8 +48,8 @@ function fetch_engine_package() {
 
   mkdir -p "$location"
 
-  local checksum_url="${SWIFT_URL}/package/${package}.md5"
-  local package_url="${SWIFT_URL}/package/${package}.tgz"
+  local checksum_url="${VENDOR_URL}/package/${package}.md5"
+  local package_url="${VENDOR_URL}/package/${package}.tgz"
   local checksum=$(curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$checksum_url" 2> /dev/null)
   local cache_checksum=""
 

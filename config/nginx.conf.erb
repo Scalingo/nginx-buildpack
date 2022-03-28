@@ -1,6 +1,10 @@
 worker_processes auto;
 daemon off;
 
+<% if ENV["ENABLE_MODSECURITY"] %>
+load_module modules/ngx_http_modsecurity_module.so;
+<% end %>
+
 events {
     worker_connections  1024;
 }
@@ -63,6 +67,11 @@ http {
       text/plain
       text/x-component;
     # text/html is always compressed by HttpGzipModule
+
+    <% if ENV['ENABLE_MODSECURITY'] %>
+      modsecurity on;
+      modsecurity_rules_file "/app/vendor/nginx/conf/modsec-nginx.conf";
+    <% end %>
 
     <% if ENV['HAS_SERVER_CONF'] %>
       include servers.conf;

@@ -105,3 +105,24 @@ server {
     }
 }
 ```
+
+## Using Nginx as WAF with ModSecurity
+
+You can easily enable the WAF feature of nginx bundled with ModSecurity by
+adding the following environment variable to your application.
+
+```
+scalingo env-set ENABLE_MODSECURITY=true
+```
+
+At the next deployment, several additional actions will be done:
+
+1. ModSecurity and its dependencies will be installed
+2. Default configuration for ModSecurity will be enabled
+
+### Customizing configuration
+
+A few environment variables can be tweaked in order to configure ModSecurity
+
+* `MODSECURITY_DEBUG_LOG_LEVEL` (default `0`): from `0` to `9` (no log to super verbose)
+* `MODSECURITY_AUDIT_LOG_LEVEL` (default `Off`): Either `On` (all requests), or `RelevantOnly` (requests returning 4XX and 5XX status code)

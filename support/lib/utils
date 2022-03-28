@@ -1,0 +1,27 @@
+function validate_env() {
+  if [ -z "$S3_BUCKET" ]; then
+      echo "Must set S3_BUCKET environment variable" >&2
+      exit 1
+  fi
+
+  if [ -z "$S3_ACCESS_KEY" ]; then
+      echo "Must set S3_ACCESS_KEY environment variable" >&2
+      exit 1
+  fi
+
+  if [ -z "$S3_SECRET_KEY" ]; then
+      echo "Must set S3_SECRET_KEY environment variable" >&2
+      exit 1
+  fi
+}
+
+function mktmpdir() {
+  tempdir="$( mktemp -t $1_XXXX )"
+  rm -rf $tempdir
+  mkdir -p $tempdir
+  echo $tempdir
+}
+
+function md5() {
+  md5sum $1 | awk '{print $1}'
+}

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/lib/utils"
+source "$basedir/lib/s3.lib.sh"
+source "$basedir/../config/versions.sh"
+
+zlib_version="${1:-$default_zlib_version}"
+
+tempdir=$(mktmpdir zlib)
+cd $tempdir
+
+echo "-----> Downloading ZLib v${zlib_version}"
+curl -LO "https://zlib.net/zlib-${zlib_version}.tar.gz"
+
+mkdir zlib
+mv zlib-${zlib_version}.tar.gz zlib
+
+zlib_filepath="zlib/zlib-${zlib_version}.tar.gz"
+s3_upload "$S3_BUCKET" "$zlib_filepath" "/${STACK}/${zlib_filepath}"

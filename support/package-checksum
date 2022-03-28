@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/lib/utils"
+source "$basedir/lib/s3.lib.sh"
+
+validate_env
+
+package="$1"
+
+cd $(mktmpdir nginx-md5)
+
+echo "-----> Creating checksum for ${package}"
+
+s3_download "${S3_BUCKET}" "/${STACK}/package/${package}.tgz" "${package}.tgz"
+
+mkdir -p ./package
+md5 "${package}.tgz" > "package/${package}.md5"
+s3_upload "${S3_BUCKET}" "package/${package}.md5" "/${STACK}/package/${package}.md5"

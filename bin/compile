@@ -10,20 +10,22 @@ fi
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source $basedir/common.sh
+source $basedir/../config/versions.sh
 
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 export_env_dir "$3"
 
-SWIFT_BUCKET=${NGINX_BP_SWIFT_BUCKET:-scalingo-php-buildpack}
-SWIFT_BASE_URL=${NGINX_BP_SWIFT_URL:-https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2}
-STACK="${STACK:-scalingo-18}"
-SWIFT_URL="${SWIFT_BASE_URL}/${SWIFT_BUCKET}/${STACK}"
+VENDOR_BASE_URL="${VENDOR_URL:-https://nginx-buildpack.s3.amazonaws.com}"
+STACK="${STACK:-scalingo-20}"
+VENDOR_URL="${VENDOR_BASE_URL}/${STACK}"
 LOG_FILES=(vendor/nginx/logs/access.log vendor/nginx/logs/error.log)
 
 SEMVER_SERVER="https://semver.scalingo.io"
 DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
 NGINX_VERSION=${NGINX_VERSION:-$DEFAULT_NGINX}
+MODSECURITY_VERSION=${MODSECURITY_VERSION:-$default_modsecurity_version}
+MODSECURITY_CORE_RULE_SET_VERSION="${MODSECURITY_CORE_RULE_SET_VERSION:-$default_modsecurity_coreruleset_version}"
 
 mkdir -p "$CACHE_DIR/package"
 mkdir -p $BUILD_DIR/bin
@@ -47,8 +49,28 @@ SH
 source "$BUILD_DIR/.profile.d/nginx.sh"
 
 cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
+mv /app/vendor/nginx "$BUILD_DIR/vendor"
 
-mv /app/vendor/nginx "$BUILD_DIR/vendor/nginx"
+if [ "$ENABLE_MODSECURITY" = "true" ] ; then
+  VENDORED_MODSECURITY=/app/vendor/modsecurity
+  fetch_engine_package modsecurity "$MODSECURITY_VERSION" "${VENDORED_MODSECURITY}" | indent
+
+  cat > "$BUILD_DIR/.profile.d/modsecurity.sh" <<SH
+  export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HOME/vendor/modsecurity/usr/lib/x86_64-linux-gnu:\$HOME/vendor/modsecurity/lib
+  erb "\$HOME/vendor/nginx/conf/modsecurity.conf.erb" > "\$HOME/vendor/nginx/conf/modsecurity.conf"
+SH
+  mv /app/vendor/modsecurity "$BUILD_DIR/vendor"
+
+  status "Downloading latest CoreRuleSet ModSecurity protection rules"
+  crs_url="https://github.com/coreruleset/coreruleset"
+  curl --location --silent "${crs_url}/archive/refs/tags/v${MODSECURITY_CORE_RULE_SET_VERSION}.tar.gz" | tar -C "$BUILD_DIR/vendor/nginx/conf" -xzf -
+  mv "$BUILD_DIR/vendor/nginx/conf/coreruleset-${MODSECURITY_CORE_RULE_SET_VERSION}" "$BUILD_DIR/vendor/nginx/conf/crs"
+
+  cp "$basedir/../config/modsec/unicode.mapping" "$BUILD_DIR/vendor/nginx/conf"
+  cp "$basedir/../config/modsec/modsecurity.conf.erb" "$BUILD_DIR/vendor/nginx/conf"
+  cp "$basedir/../config/modsec/modsec-nginx.conf" "$BUILD_DIR/vendor/nginx/conf"
+  cp "$basedir/../config/modsec/crs-config.conf" "$BUILD_DIR/vendor/nginx/conf"
+fi
 
 mkdir -p "bin"
 

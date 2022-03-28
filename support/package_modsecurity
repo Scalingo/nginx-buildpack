@@ -1,0 +1,110 @@
+#!/bin/bash
+
+# Inspired from https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes-for-v3.x
+
+set -e -o pipefail
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../bin/common.sh"
+source "$basedir/../config/versions.sh"
+source "$basedir/lib/utils"
+source "$basedir/lib/s3.lib.sh"
+
+validate_env
+
+MODSECURITY_VERSION=${1:-$default_modsecurity_version}
+MODSECURITY_DIR="modsecurity-v${MODSECURITY_VERSION}"
+MODSECURITY_TARBALL="${MODSECURITY_DIR}.tar.gz"
+MODSECURITY_URL="https://github.com/SpiderLabs/ModSecurity/releases/download/v${MODSECURITY_VERSION}/${MODSECURITY_TARBALL}"
+
+# Setup constants for Ubuntu packages version according to the used stack
+# We declare associative array (a hash), syntax is
+# declare -A var_name=(["key1"]="val1" ["key2"]="val2" ...)
+# echo ${var_name[key1]} # display: "val1"
+declare -A geoip_version=(["scalingo-20"]="1.6.12-6build1" ["scalingo-18"]="1.6.12-1")
+declare -A yajl_version=(["scalingo-20"]="2.1.0-3" ["scalingo-18"]="2.1.0-2build1")
+declare -A lmdb_version=(["scalingo-20"]="0.9.24-1" ["scalingo-18"]="0.9.21-1")
+declare -A lmdb_repo=(["scalingo"]="main" ["scalingo-18"]="universe")
+declare -A libfuzzy_version=(["scalingo-20"]="2.14.1+git20180629.57fcfff-1build1" ["scalingo-18"]="2.14-1")
+declare -A lua_version=(["scalingo-20"]="5.3.3-1.1ubuntu2" ["scalingo-18"]="5.3.3-1ubuntu0.18.04.1")
+
+tempdir=$(mktmpdir modsecurity)
+cd $tempdir
+
+install_dir="/app/vendor/modsecurity"
+mkdir -p "$install_dir"
+
+declare -A deps_versions
+status "Packaging libgeoip"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip-dev_${geoip_version[$STACK]}_amd64.deb"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip1_${geoip_version[$STACK]}_amd64.deb"
+ar x libgeoip-dev_${geoip_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+ar x libgeoip1_${geoip_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+
+status "Packaging libyajl"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl-dev_${yajl_version[$STACK]}_amd64.deb"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl2_${yajl_version[$STACK]}_amd64.deb"
+ar x libyajl-dev_${yajl_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+ar x libyajl2_${yajl_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+
+status "Packaging liblmdb"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb-dev_${lmdb_version[$STACK]}_amd64.deb"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb0_${lmdb_version[$STACK]}_amd64.deb"
+ar x liblmdb-dev_${lmdb_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+ar x liblmdb0_${lmdb_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+
+status "Packaging ssdeep (libfuzzy)"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$STACK]}_amd64.deb"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$STACK]}_amd64.deb"
+ar x libfuzzy2_${libfuzzy_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+ar x libfuzzy-dev_${libfuzzy_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+
+status "Packaging Lua (liblua5.3)"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-0_${lua_version[$STACK]}_amd64.deb"
+curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-dev_${lua_version[$STACK]}_amd64.deb"
+ar x liblua5.3-0_${lua_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+ar x liblua5.3-dev_${lua_version[$STACK]}_amd64.deb
+tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+
+status "Downloading ModSecurity"
+curl --remote-name --location "$MODSECURITY_URL"
+tar --extract --ungzip --verbose --file "$MODSECURITY_TARBALL"
+pushd "$MODSECURITY_DIR" >/dev/null
+  ./build.sh && \
+  # SSDEEP is not handled like others, it's not possible to easily tweak the path, doing it manually
+  sed -i "s+^SSDEEP_POSSIBLE_PATHS=.*+SSDEEP_POSSIBLE_PATHS=${install_dir}/usr+" "./configure" && \
+  sed -i "s+^LUA_POSSIBLE_PATHS=.*+LUA_POSSIBLE_PATHS=${install_dir}/usr+" "./configure" && \
+  sed -i "s+LUA_CFLAGS=\"-I\${lua_inc_path}\"+LUA_CFLAGS=\"-I\${lua_inc_path} -I\${lua_inc_path}/../x86_64-linux-gnu\"+" "./configure" && \
+  ./configure \
+     "--prefix=${install_dir}" \
+     "--with-geoip=${install_dir}/usr" \
+     "--with-yajl=${install_dir}/usr" \
+     "--with-lmdb=${install_dir}/usr" \
+     "--with-ssdeep=yes" \
+     "--with-lua=${install_dir}/usr" \
+     --disable-examples && \
+  make && \
+  make install
+popd >/dev/null
+
+status "Uploading package to S3 ${S3_URL}/package/modsecurity-${MODSECURITY_VERSION}.tgz"
+package_filepath="package/modsecurity-${MODSECURITY_VERSION}.tgz"
+mkdir package
+pushd /app/vendor/modsecurity >/dev/null
+  tar zcvf "${tempdir}/${package_filepath}" .
+popd >/dev/null
+
+s3_upload "$S3_BUCKET" "${package_filepath}" "/${STACK}/${package_filepath}"
+"$basedir/manifest" modsecurity
+"$basedir/package-checksum" "modsecurity-${MODSECURITY_VERSION}"
+
+status "Done building ModsSecurity package!"
