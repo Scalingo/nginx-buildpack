@@ -1,0 +1,8 @@
+version = "1.0.0"
+owner = "etienne@scalingo.com"
+team = "IST"
+description = "Buildpack to deploy a customizable reverse proxy: nginx"
+languages = ["shell"]
+destination_server = []
+flags = ["buildpack"]
+dependencies = []
