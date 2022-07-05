@@ -119,17 +119,17 @@ server {
 - Create an nginx application on Scalingo: [https://doc.scalingo.com/platform/deployment/buildpacks/nginx](https://doc.scalingo.com/platform/deployment/buildpacks/nginx#purpose-of-this-buildpack)
 - Set the environment variable `ENABLED_MODSECURITY=true` and do a redeploy the app. For that create an empty commit and push it to your scalingo remote.
   Several additional actions will be done in this new deployment:
-  
+
     1. ModSecurity and its dependencies will be installed
     2. Default configuration for ModSecurity will be enabled
 
 - You can test that the CRS are active with the following request:
-    
+
     `curl -X INVALID_HTTP_METHOD https://$YOUR_APP_NAME.osc-fr1.scalingo.io -v`
-    
+
     You should expect a 403 forbidden answer such as the following:
-    
-    ```bash
+
+    ```
     > INVALID_HTTP_METHOD / HTTP/2
     > Host: $YOUR_APP_NAME.osc-fr1.scalingo.io
     > User-Agent: curl/7.64.1
@@ -151,7 +151,7 @@ server {
     </body>
     </html>
     ```
-    
+
 
 ### Updating the CRS rules
 
@@ -170,20 +170,20 @@ Note: minimal supported version is 3.0.6
 - Note that, on Scalingo, the root of your repository is deployed on `/app`
 - Create a file to hold all the custom rules you will write and reference it in the nginx config file like so:
 
-```bash
-##############################################
-# in nginx.conf.erb file
-# This file is written in Nginx config language
+* In the `nginx.conf.erb` file of your repository
 
+```
 location / {
-    modsecurity on; # Enable ModSecurity on /
+    modsecurity on;
     modsecurity_rules_file /app/custom-rules.modsecurity; # load custom rules file
     # (...)
     # The rest of your NGINX config file
 }
+```
 
-##############################################
-# in custom-rules.modsecurity file:
+* In a file named `custom-rules.modsecurity`
+
+```
 # This file is written in ModSecurity config language
 
 # CUSTOM RULE id:1234
@@ -207,7 +207,7 @@ SecRule ARGS:param1 "@contains test" \
 
 If you identified a CRS rule that you want to disable, you can use this modsecurity directive to disable it:
 
-```bash
+```
 ##############################################
 # in nginx.conf.erb file:
 # This file is written in Nginx config language
@@ -215,7 +215,7 @@ If you identified a CRS rule that you want to disable, you can use this modsecur
 location / {
     modsecurity on; # Enable ModSecurity on /
     modsecurity_rules_file /app/custom-rules.modsecurity; # load custom rules from file
-    # 
+    #
     # (...)
     # Rest of your config file
 }
