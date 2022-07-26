@@ -117,7 +117,7 @@ server {
 ### How-to deploy and test on Scalingo
 
 - Create an nginx application on Scalingo: [https://doc.scalingo.com/platform/deployment/buildpacks/nginx](https://doc.scalingo.com/platform/deployment/buildpacks/nginx#purpose-of-this-buildpack)
-- Set the environment variable `ENABLED_MODSECURITY=true` and do a redeploy the app. For that create an empty commit and push it to your scalingo remote.
+- Set the environment variable `ENABLE_MODSECURITY=true` and do a redeploy the app. For that create an empty commit and push it to your scalingo remote.
   Several additional actions will be done in this new deployment:
   
     1. ModSecurity and its dependencies will be installed
