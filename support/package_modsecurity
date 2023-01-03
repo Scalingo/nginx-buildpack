@@ -21,12 +21,12 @@ MODSECURITY_URL="https://github.com/SpiderLabs/ModSecurity/releases/download/v${
 # We declare associative array (a hash), syntax is
 # declare -A var_name=(["key1"]="val1" ["key2"]="val2" ...)
 # echo ${var_name[key1]} # display: "val1"
-declare -A geoip_version=(["scalingo-20"]="1.6.12-6build1" ["scalingo-18"]="1.6.12-1")
-declare -A yajl_version=(["scalingo-20"]="2.1.0-3" ["scalingo-18"]="2.1.0-2build1")
-declare -A lmdb_version=(["scalingo-20"]="0.9.24-1" ["scalingo-18"]="0.9.21-1")
-declare -A lmdb_repo=(["scalingo"]="main" ["scalingo-18"]="universe")
-declare -A libfuzzy_version=(["scalingo-20"]="2.14.1+git20180629.57fcfff-1build1" ["scalingo-18"]="2.14-1")
-declare -A lua_version=(["scalingo-20"]="5.3.3-1.1ubuntu2" ["scalingo-18"]="5.3.3-1ubuntu0.18.04.1")
+declare -A geoip_version=(["scalingo-22"]="1.6.12-6build1" ["scalingo-20"]="1.6.12-6build1" ["scalingo-18"]="1.6.12-1")
+declare -A yajl_version=(["scalingo-22"]="2.1.0-3build2" ["scalingo-20"]="2.1.0-3" ["scalingo-18"]="2.1.0-2build1")
+declare -A lmdb_version=(["scalingo-22"]="0.9.24-1build2" ["scalingo-20"]="0.9.24-1" ["scalingo-18"]="0.9.21-1")
+declare -A lmdb_repo=(["scalingo-22"]="main" ["scalingo"]="main" ["scalingo-18"]="universe")
+declare -A libfuzzy_version=(["scalingo-22"]="2.14.1+git20180629.57fcfff-2" ["scalingo-20"]="2.14.1+git20180629.57fcfff-1build1" ["scalingo-18"]="2.14-1")
+declare -A lua_version=(["scalingo-22"]="5.3.6-1build1" ["scalingo-20"]="5.3.3-1.1ubuntu2" ["scalingo-18"]="5.3.3-1ubuntu0.18.04.1")
 
 tempdir=$(mktmpdir modsecurity)
 cd $tempdir
