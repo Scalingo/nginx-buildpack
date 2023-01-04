@@ -9,9 +9,10 @@
 set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../bin/common.sh"
+source "$basedir/../config/versions.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/s3.lib.sh"
-source "$basedir/../config/versions.sh"
 
 # Binding between modsecurity and nginx (since modsecurity can be used as standalone or with apache for instance)
 MODSECURITY_VERSION=${MODSECURITY_VERSION:-$default_modsecurity_version}
@@ -42,12 +43,12 @@ pcre_version="$NGINX_PCRE_VERSION"
 tempdir=$(mktmpdir nginx)
 cd $tempdir
 
-echo "-----> Downloading dependency PCRE ${pcre_version}"
+status "Downloading dependency PCRE ${pcre_version}"
 
 curl -LO "https://sourceforge.net/projects/pcre/files/pcre/${pcre_version}/pcre-${pcre_version}.tar.gz"
 tar -xzvf "pcre-${pcre_version}.tar.gz"
 
-echo "-----> Downloading dependency zlib ${zlib_version}"
+status "Downloading dependency zlib ${zlib_version}"
 
 zlib_filename="zlib-${zlib_version}.tar.gz"
 s3_download "$S3_BUCKET" "/${STACK}/zlib/${zlib_filename}" "$zlib_filename"
@@ -63,19 +64,19 @@ if [ "NO_MODSECURITY_MODULE" != "true" ] ; then
   export MODSECURITY_INC="${modsecurity_dir}/include"
   export MODSECURITY_LIB="${modsecurity_dir}/lib"
 
-  echo "---> Installing modsecurity-nginx"
+  status "Installing modsecurity-nginx"
   curl --remote-name --location "$MODSECURITY_NGINX_URL"
   tar --extract --ungzip --verbose --file "$MODSECURITY_NGINX_TARBALL"
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
 fi
 
-echo "-----> Downloading NGINX ${nginx_version}"
+status "Downloading NGINX ${nginx_version}"
 
 curl -LO "https://nginx.org/download/nginx-${nginx_version}.tar.gz"
 tar -xzvf "nginx-${nginx_version}.tar.gz"
 
-echo "-----> Compile Nginx"
+status "Compile Nginx"
 
 pushd nginx-${nginx_version} >/dev/null && \
   ./configure \
@@ -90,12 +91,11 @@ pushd nginx-${nginx_version} >/dev/null && \
   popd > /dev/null
 rc=$?
 if [[ $rc -ne 0 ]]; then
-  echo "Fail to compile Nginx" >&2
-  exit $rc
+  error "Fail to compile Nginx"
 fi
 
 
-echo "-----> Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
+status "Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
 mkdir package
 nginx_filepath="package/nginx-${nginx_version}.tgz"
 pushd /app/vendor/nginx >/dev/null
@@ -106,4 +106,4 @@ s3_upload "$S3_BUCKET" "$nginx_filepath" "/${STACK}/${nginx_filepath}"
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"
 
-echo "-----> Done building Nginx package!"
+status "Done building Nginx package!"

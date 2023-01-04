@@ -107,4 +107,4 @@ s3_upload "$S3_BUCKET" "${package_filepath}" "/${STACK}/${package_filepath}"
 "$basedir/manifest" modsecurity
 "$basedir/package-checksum" "modsecurity-${MODSECURITY_VERSION}"
 
-status "Done building ModsSecurity package!"
+status "Done building ModSecurity package!"
