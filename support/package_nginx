@@ -71,8 +71,8 @@ if [ $NO_MODSECURITY_MODULE != "true" ] ; then
   export MODSECURITY_LIB="${modsecurity_dir}/lib"
 
   status "Installing modsecurity-nginx"
-  curl --remote-name --location "$MODSECURITY_NGINX_URL"
-  tar --extract --ungzip --verbose --file "$MODSECURITY_NGINX_TARBALL"
+  curl --remote-name --location --silent "$MODSECURITY_NGINX_URL"
+  tar --extract --ungzip --file "$MODSECURITY_NGINX_TARBALL"
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
   nginx_configure_args=$nginx_configure_args \
