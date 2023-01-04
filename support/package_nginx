@@ -63,10 +63,10 @@ nginx_configure_args="--prefix=/app/vendor/nginx --with-http_ssl_module --with-h
 if [ $NO_MODSECURITY_MODULE != "true" ] ; then
   status "Downloading ModSecurity ${MODSECURITY_VERSION}"
   modsecurity_filename="modsecurity-${MODSECURITY_VERSION}.tgz"
-  s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename"
+  s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename" > /dev/null
   modsecurity_dir="/app/vendor/modsecurity"
   mkdir -p "$modsecurity_dir"
-  tar --extract --ungzip --verbose --file "$modsecurity_filename" --directory "$modsecurity_dir"
+  tar --extract --ungzip --file "$modsecurity_filename" --directory "$modsecurity_dir"
   # Required for Nginx compilation with modsecurity-nginx module
   export MODSECURITY_INC="${modsecurity_dir}/include"
   export MODSECURITY_LIB="${modsecurity_dir}/lib"
