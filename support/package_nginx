@@ -68,8 +68,8 @@ if [ $NO_MODSECURITY_MODULE != "true" ] ; then
   mkdir -p "$modsecurity_dir"
   tar --extract --ungzip --file "$modsecurity_filename" --directory "$modsecurity_dir"
   # Required for Nginx compilation with modsecurity-nginx module
-  export MODSECURITY_INC="${modsecurity_dir}/include"
-  export MODSECURITY_LIB="${modsecurity_dir}/lib"
+  export MODSECURITY_INC="${modsecurity_dir}/usr/include"
+  export MODSECURITY_LIB="${modsecurity_dir}/usr/lib/x86_64-linux-gnu"
 
   status "Installing modsecurity-nginx ${MODSECURITY_NGINX_VERSION}"
   curl --remote-name --location --silent "$MODSECURITY_NGINX_URL"
@@ -89,7 +89,6 @@ rc=$?
 if [[ $rc -ne 0 ]]; then
   error "Fail to compile Nginx"
 fi
-
 
 status "Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
 mkdir package
