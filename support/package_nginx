@@ -61,16 +61,17 @@ tar -xzf "nginx-${nginx_version}.tar.gz"
 
 nginx_configure_args="--prefix=/app/vendor/nginx --with-http_ssl_module --with-http_auth_request_module --with-pcre=../pcre-${pcre_version} --with-zlib=../zlib-${zlib_version} --with-http_realip_module"
 if [ $NO_MODSECURITY_MODULE != "true" ] ; then
+  status "Downloading ModSecurity ${MODSECURITY_VERSION}"
   modsecurity_filename="modsecurity-${MODSECURITY_VERSION}.tgz"
   s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename"
   modsecurity_dir="/app/vendor/modsecurity"
   mkdir -p "$modsecurity_dir"
   tar --extract --ungzip --verbose --file "$modsecurity_filename" --directory "$modsecurity_dir"
-  # Required for nginx compilation with modsecurity-nginx module
+  # Required for Nginx compilation with modsecurity-nginx module
   export MODSECURITY_INC="${modsecurity_dir}/include"
   export MODSECURITY_LIB="${modsecurity_dir}/lib"
 
-  status "Installing modsecurity-nginx"
+  status "Installing modsecurity-nginx ${MODSECURITY_NGINX_VERSION}"
   curl --remote-name --location --silent "$MODSECURITY_NGINX_URL"
   tar --extract --ungzip --file "$MODSECURITY_NGINX_TARBALL"
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
