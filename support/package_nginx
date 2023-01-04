@@ -54,7 +54,7 @@ zlib_filename="zlib-${zlib_version}.tar.gz"
 s3_download "$S3_BUCKET" "/${STACK}/zlib/${zlib_filename}" "$zlib_filename"
 tar -xzvf "$zlib_filename"
 
-if [ "NO_MODSECURITY_MODULE" != "true" ] ; then
+if [ $NO_MODSECURITY_MODULE != "true" ] ; then
   modsecurity_filename="modsecurity-${MODSECURITY_VERSION}.tgz"
   s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename"
   modsecurity_dir="/app/vendor/modsecurity"
@@ -71,12 +71,12 @@ if [ "NO_MODSECURITY_MODULE" != "true" ] ; then
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
 fi
 
-status "Downloading NGINX ${nginx_version}"
+status "Downloading Nginx ${nginx_version}"
 
 curl -LO "https://nginx.org/download/nginx-${nginx_version}.tar.gz"
 tar -xzvf "nginx-${nginx_version}.tar.gz"
 
-status "Compile Nginx"
+status "Compile Nginx ${nginx_version}"
 
 pushd nginx-${nginx_version} >/dev/null && \
   ./configure \
