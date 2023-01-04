@@ -35,49 +35,49 @@ install_dir="/app/vendor/modsecurity"
 mkdir -p "$install_dir"
 
 declare -A deps_versions
-status "Packaging libgeoip"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip-dev_${geoip_version[$STACK]}_amd64.deb"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip1_${geoip_version[$STACK]}_amd64.deb"
+status "Packaging libgeoip ${geoip_version[$STACK]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip-dev_${geoip_version[$STACK]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip1_${geoip_version[$STACK]}_amd64.deb"
 ar x libgeoip-dev_${geoip_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 ar x libgeoip1_${geoip_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 
-status "Packaging libyajl"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl-dev_${yajl_version[$STACK]}_amd64.deb"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl2_${yajl_version[$STACK]}_amd64.deb"
+status "Packaging libyajl ${yajl_version[$STACK]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl-dev_${yajl_version[$STACK]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl2_${yajl_version[$STACK]}_amd64.deb"
 ar x libyajl-dev_${yajl_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 ar x libyajl2_${yajl_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 
-status "Packaging liblmdb"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb-dev_${lmdb_version[$STACK]}_amd64.deb"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb0_${lmdb_version[$STACK]}_amd64.deb"
+status "Packaging liblmdb ${lmdb_repo[$STACK]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb-dev_${lmdb_version[$STACK]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb0_${lmdb_version[$STACK]}_amd64.deb"
 ar x liblmdb-dev_${lmdb_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 ar x liblmdb0_${lmdb_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 
-status "Packaging ssdeep (libfuzzy)"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$STACK]}_amd64.deb"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$STACK]}_amd64.deb"
+status "Packaging ssdeep (libfuzzy) ${libfuzzy_version[$STACK]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$STACK]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$STACK]}_amd64.deb"
 ar x libfuzzy2_${libfuzzy_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 ar x libfuzzy-dev_${libfuzzy_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 
-status "Packaging Lua (liblua5.3)"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-0_${lua_version[$STACK]}_amd64.deb"
-curl --remote-name --location "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-dev_${lua_version[$STACK]}_amd64.deb"
+status "Packaging Lua (liblua5.3) ${lua_version[$STACK]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-0_${lua_version[$STACK]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-dev_${lua_version[$STACK]}_amd64.deb"
 ar x liblua5.3-0_${lua_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 ar x liblua5.3-dev_${lua_version[$STACK]}_amd64.deb
-tar --extract --xz --verbose --directory "$install_dir" --file data.tar.xz
+tar --extract --xz --directory "$install_dir" --file data.tar.xz
 
-status "Downloading ModSecurity"
-curl --remote-name --location "$MODSECURITY_URL"
-tar --extract --ungzip --verbose --file "$MODSECURITY_TARBALL"
+status "Downloading ModSecurity $MODSECURITY_VERSION"
+curl --remote-name --location --silent "$MODSECURITY_URL"
+tar --extract --ungzip --file "$MODSECURITY_TARBALL"
 pushd "$MODSECURITY_DIR" >/dev/null
   ./build.sh && \
   # SSDEEP is not handled like others, it's not possible to easily tweak the path, doing it manually
@@ -100,11 +100,11 @@ status "Uploading package to S3 ${S3_URL}/package/modsecurity-${MODSECURITY_VERS
 package_filepath="package/modsecurity-${MODSECURITY_VERSION}.tgz"
 mkdir package
 pushd /app/vendor/modsecurity >/dev/null
-  tar zcvf "${tempdir}/${package_filepath}" .
+  tar zcf "${tempdir}/${package_filepath}" .
 popd >/dev/null
 
-s3_upload "$S3_BUCKET" "${package_filepath}" "/${STACK}/${package_filepath}"
+s3_upload "$S3_BUCKET" "${package_filepath}" "/${STACK}/${package_filepath}" > /dev/null
 "$basedir/manifest" modsecurity
 "$basedir/package-checksum" "modsecurity-${MODSECURITY_VERSION}"
 
-status "Done building ModSecurity package!"
+status "Done building ModSecurity $MODSECURITY_VERSION package!"
