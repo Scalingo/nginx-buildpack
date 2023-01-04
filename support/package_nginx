@@ -68,7 +68,6 @@ if [ "NO_MODSECURITY_MODULE" != "true" ] ; then
   tar --extract --ungzip --verbose --file "$MODSECURITY_NGINX_TARBALL"
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
-
 fi
 
 echo "-----> Downloading NGINX ${nginx_version}"
@@ -76,7 +75,7 @@ echo "-----> Downloading NGINX ${nginx_version}"
 curl -LO "https://nginx.org/download/nginx-${nginx_version}.tar.gz"
 tar -xzvf "nginx-${nginx_version}.tar.gz"
 
-echo "-----> Uploading source to build server"
+echo "-----> Compile Nginx"
 
 pushd nginx-${nginx_version} >/dev/null && \
   ./configure \
@@ -88,7 +87,13 @@ pushd nginx-${nginx_version} >/dev/null && \
     "--add-dynamic-module=../${MODSECURITY_NGINX_DIR}" \
     --with-http_realip_module && \
   make && make install && \
-popd > /dev/null
+  popd > /dev/null
+rc=$?
+if [[ $rc -ne 0 ]]; then
+  echo "Fail to compile Nginx" >&2
+  exit $rc
+fi
+
 
 echo "-----> Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
 mkdir package
