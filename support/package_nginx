@@ -9,9 +9,10 @@
 set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../bin/common.sh"
+source "$basedir/../config/versions.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/s3.lib.sh"
-source "$basedir/../config/versions.sh"
 
 # Binding between modsecurity and nginx (since modsecurity can be used as standalone or with apache for instance)
 MODSECURITY_VERSION=${MODSECURITY_VERSION:-$default_modsecurity_version}
@@ -42,55 +43,54 @@ pcre_version="$NGINX_PCRE_VERSION"
 tempdir=$(mktmpdir nginx)
 cd $tempdir
 
-echo "-----> Downloading dependency PCRE ${pcre_version}"
+status "Downloading dependency PCRE ${pcre_version}"
 
-curl -LO "https://sourceforge.net/projects/pcre/files/pcre/${pcre_version}/pcre-${pcre_version}.tar.gz"
-tar -xzvf "pcre-${pcre_version}.tar.gz"
+curl --location --remote-name --silent "https://sourceforge.net/projects/pcre/files/pcre/${pcre_version}/pcre-${pcre_version}.tar.gz"
+tar -xzf "pcre-${pcre_version}.tar.gz"
 
-echo "-----> Downloading dependency zlib ${zlib_version}"
+status "Downloading dependency zlib ${zlib_version}"
 
 zlib_filename="zlib-${zlib_version}.tar.gz"
-s3_download "$S3_BUCKET" "/${STACK}/zlib/${zlib_filename}" "$zlib_filename"
-tar -xzvf "$zlib_filename"
+s3_download "$S3_BUCKET" "/${STACK}/zlib/${zlib_filename}" "$zlib_filename" > /dev/null
+tar -xzf "$zlib_filename"
 
-if [ "NO_MODSECURITY_MODULE" != "true" ] ; then
+status "Downloading Nginx ${nginx_version}"
+
+curl --location --remote-name --silent "https://nginx.org/download/nginx-${nginx_version}.tar.gz"
+tar -xzf "nginx-${nginx_version}.tar.gz"
+
+nginx_configure_args="--prefix=/app/vendor/nginx --with-http_ssl_module --with-http_auth_request_module --with-pcre=../pcre-${pcre_version} --with-zlib=../zlib-${zlib_version} --with-http_realip_module"
+if [ "$NO_MODSECURITY_MODULE" != "true" ] ; then
+  status "Downloading ModSecurity ${MODSECURITY_VERSION}"
   modsecurity_filename="modsecurity-${MODSECURITY_VERSION}.tgz"
-  s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename"
+  s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename" > /dev/null
   modsecurity_dir="/app/vendor/modsecurity"
   mkdir -p "$modsecurity_dir"
-  tar --extract --ungzip --verbose --file "$modsecurity_filename" --directory "$modsecurity_dir"
-  # Required for nginx compilation with modsecurity-nginx module
+  tar --extract --ungzip --file "$modsecurity_filename" --directory "$modsecurity_dir"
+  # Required for Nginx compilation with modsecurity-nginx module
   export MODSECURITY_INC="${modsecurity_dir}/include"
   export MODSECURITY_LIB="${modsecurity_dir}/lib"
 
-  echo "---> Installing modsecurity-nginx"
-  curl --remote-name --location "$MODSECURITY_NGINX_URL"
-  tar --extract --ungzip --verbose --file "$MODSECURITY_NGINX_TARBALL"
+  status "Installing modsecurity-nginx ${MODSECURITY_NGINX_VERSION}"
+  curl --remote-name --location --silent "$MODSECURITY_NGINX_URL"
+  tar --extract --ungzip --file "$MODSECURITY_NGINX_TARBALL"
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
-
+  nginx_configure_args="$nginx_configure_args --add-dynamic-module=../${MODSECURITY_NGINX_DIR}"
 fi
 
-echo "-----> Downloading NGINX ${nginx_version}"
-
-curl -LO "https://nginx.org/download/nginx-${nginx_version}.tar.gz"
-tar -xzvf "nginx-${nginx_version}.tar.gz"
-
-echo "-----> Uploading source to build server"
+status "Compile Nginx ${nginx_version}"
 
 pushd nginx-${nginx_version} >/dev/null && \
-  ./configure \
-    --prefix=/app/vendor/nginx \
-    --with-http_ssl_module \
-    --with-http_auth_request_module \
-    --with-pcre=../pcre-${pcre_version} \
-    --with-zlib=../zlib-${zlib_version} \
-    "--add-dynamic-module=../${MODSECURITY_NGINX_DIR}" \
-    --with-http_realip_module && \
-  make && make install && \
-popd > /dev/null
+  ./configure $nginx_configure_args && \
+  make > /dev/null && make install && \
+  popd > /dev/null
+rc=$?
+if [[ $rc -ne 0 ]]; then
+  error "Fail to compile Nginx"
+fi
 
-echo "-----> Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
+status "Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
 mkdir package
 nginx_filepath="package/nginx-${nginx_version}.tgz"
 pushd /app/vendor/nginx >/dev/null
@@ -101,4 +101,4 @@ s3_upload "$S3_BUCKET" "$nginx_filepath" "/${STACK}/${nginx_filepath}"
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"
 
-echo "-----> Done building Nginx package!"
+status "Done building Nginx package!"
