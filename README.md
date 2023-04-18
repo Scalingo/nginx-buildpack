@@ -240,7 +240,7 @@ A few environment variables can be tweaked in order to configure ModSecurity
 
 Compatibility: `scalingo-22-minimal` only
 
-If this buildpack is used with a minimal stack , the following dependencies should be installed through the APT buildpack:
+If this buildpack is used with a minimal stack , the following dependencies should be installed through the [APT buildpack](https://doc.scalingo.com/platform/deployment/buildpacks/apt):
 
 ```
 libxml2
