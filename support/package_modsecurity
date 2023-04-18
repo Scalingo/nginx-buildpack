@@ -16,6 +16,8 @@ source "$basedir/lib/deb.lib.sh"
 which s3cmd >/dev/null || apt-get install s3cmd
 # Tool required to unarchived .deb data.tar.zst archives (started with ubuntu 22.04)
 which zstd >/dev/null || apt-get install zstd
+# Tool required for building modsecurity
+which aclocal >/dev/null || apt-get install automake apt-get install libssl-dev libpcre3-dev libxml2-dev libcurl4-openssl-dev
 
 validate_env
 
@@ -41,36 +43,42 @@ cd $tempdir
 install_dir="/app/vendor/modsecurity"
 mkdir -p "${install_dir}"
 
+# Handle minimal stacks
+deps_stack=$STACK
+if [[ "$STACK" =~ .*minimal$ ]] ; then
+  deps_stack=$(echo $STACK | sed -e 's/-minimal//')
+fi
+
 declare -A deps_versions
-status "Packaging libgeoip ${geoip_version[$STACK]}"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip-dev_${geoip_version[$STACK]}_amd64.deb"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip1_${geoip_version[$STACK]}_amd64.deb"
-extract_deb "libgeoip-dev_${geoip_version[$STACK]}_amd64.deb" "${install_dir}"
-extract_deb "libgeoip1_${geoip_version[$STACK]}_amd64.deb" "${install_dir}"
+status "Packaging libgeoip ${geoip_version[$deps_stack]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/g/geoip/libgeoip1_${geoip_version[$deps_stack]}_amd64.deb"
+extract_deb "libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
+extract_deb "libgeoip1_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
-status "Packaging libyajl ${yajl_version[$STACK]}"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl-dev_${yajl_version[$STACK]}_amd64.deb"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl2_${yajl_version[$STACK]}_amd64.deb"
-extract_deb "libyajl-dev_${yajl_version[$STACK]}_amd64.deb" "${install_dir}"
-extract_deb "libyajl2_${yajl_version[$STACK]}_amd64.deb" "${install_dir}"
+status "Packaging libyajl ${yajl_version[$deps_stack]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/y/yajl/libyajl2_${yajl_version[$deps_stack]}_amd64.deb"
+extract_deb "libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb" "${install_dir}"
+extract_deb "libyajl2_${yajl_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
-status "Packaging liblmdb ${lmdb_repo[$STACK]}"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb-dev_${lmdb_version[$STACK]}_amd64.deb"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$STACK]}/l/lmdb/liblmdb0_${lmdb_version[$STACK]}_amd64.deb"
-extract_deb "liblmdb-dev_${lmdb_version[$STACK]}_amd64.deb" "${install_dir}"
-extract_deb "liblmdb0_${lmdb_version[$STACK]}_amd64.deb" "${install_dir}"
+status "Packaging liblmdb ${lmdb_repo[$deps_stack]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$deps_stack]}/l/lmdb/liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$deps_stack]}/l/lmdb/liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb"
+extract_deb "liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb" "${install_dir}"
+extract_deb "liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
-status "Packaging ssdeep (libfuzzy) ${libfuzzy_version[$STACK]}"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$STACK]}_amd64.deb"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$STACK]}_amd64.deb"
-extract_deb "libfuzzy2_${libfuzzy_version[$STACK]}_amd64.deb" "${install_dir}"
-extract_deb "libfuzzy-dev_${libfuzzy_version[$STACK]}_amd64.deb" "${install_dir}"
+status "Packaging ssdeep (libfuzzy) ${libfuzzy_version[$deps_stack]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb"
+extract_deb "libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
+extract_deb "libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
-status "Packaging Lua (liblua5.3) ${lua_version[$STACK]}"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-0_${lua_version[$STACK]}_amd64.deb"
-curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-dev_${lua_version[$STACK]}_amd64.deb"
-extract_deb "liblua5.3-0_${lua_version[$STACK]}_amd64.deb" "${install_dir}"
-extract_deb "liblua5.3-dev_${lua_version[$STACK]}_amd64.deb" "${install_dir}"
+status "Packaging Lua (liblua5.3) ${lua_version[$deps_stack]}"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "http://mirrors.kernel.org/ubuntu/pool/main/l/lua5.3/liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb"
+extract_deb "liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
+extract_deb "liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Downloading ModSecurity $MODSECURITY_VERSION"
 curl --remote-name --location --silent "$MODSECURITY_URL"
