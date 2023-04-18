@@ -235,3 +235,16 @@ A few environment variables can be tweaked in order to configure ModSecurity
 
 * `MODSECURITY_DEBUG_LOG_LEVEL` (default `0`): from `0` to `9` (no log to super verbose)
 * `MODSECURITY_AUDIT_LOG_LEVEL` (default `Off`): Either `On` (all requests), or `RelevantOnly` (requests returning 4XX and 5XX status code)
+
+### Usage with a minimal Stack
+
+Compatibility: `scalingo-22-minimal` only
+
+If this buildpack is used with a minimal stack , the following dependencies should be installed through the APT buildpack:
+
+```
+libxml2
+libssl3
+libpcre3
+libcurl4
+```
