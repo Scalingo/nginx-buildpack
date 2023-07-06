@@ -110,9 +110,17 @@ server {
 
 ### Glossary:
 
-- **WAF**: Web Application Firewall. In a web architecture, this component’s sole role is to filter inbound HTTP traffic by applying pre-defined rules. Some WAF are adaptive and “learn” from patterns, some are static and need to have their rules updated.
-- **ModSecurity**: embedded interpreter for query filtering. It is deployed as a plugin in most web servers (Nginx, Apache, etc…)
-- **CRS**: Core Rule Set, it's the set of community rules edited under the OWASP governance that aim to protect against the Top 10 threat for web applications.
+- **WAF**: Web Application Firewall. In a web architecture, this component’s
+  sole role is to filter inbound HTTP traffic by applying pre-defined rules.
+  Some WAF are adaptive and “learn” from patterns, some are static and need to
+  have their rules updated.
+- **ModSecurity**: embedded interpreter for query filtering. It is deployed as
+  a plugin in most web servers (Nginx, Apache, etc…)\
+  **default version**: `3.0.9`
+- **CRS**: Core Rule Set, it's the set of community rules edited under the
+  OWASP governance that aim to protect against the Top 10 threat for web
+  applications.\
+  **default version**: `3.3.4`
 
 ### How-to deploy and test on Scalingo
 
@@ -155,20 +163,24 @@ server {
 
 ### Updating the CRS rules
 
-- You have to redeploy the application, the latest stable version is downloaded during the build phase. For that, create an empty commit on your repository and push it to the scalingo remote
+You have to redeploy the application, the latest stable version is downloaded
+during the build phase. For that, create an empty commit on your repository and
+push it to the scalingo remote.
 
-Note: you can manually set a specific version of the CRS by setting the variable `MODSECURITY_CORE_RULE_SET_VERSION` (default is `3.3.2` at the day of May 31, 2022)
+You can manually specify the version of CRS you want by setting the variable
+`MODSECURITY_CORE_RULE_SET_VERSION`.
 
 ### Updating the ModSecurity version
 
-- Upon each deployment, the latest packaged version of modsecurity is used. Scalingo does not provide any guarantee in term of packagin time after each release, get in touch with the support if you need a specific version.
-
-Note: minimal supported version is 3.0.6
+Upon each deployment, the latest packaged version of modsecurity is used.
+Scalingo does not provide any guarantee in term of packagin time after each
+release, get in touch with the support if you need a specific version.
 
 ### How-to add a custom rule
 
 - Note that, on Scalingo, the root of your repository is deployed on `/app`
-- Create a file to hold all the custom rules you will write and reference it in the nginx config file like so:
+- Create a file to hold all the custom rules you will write and reference it in
+  the nginx config file like so:
 
 ```bash
 ##############################################
