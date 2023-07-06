@@ -16,7 +16,7 @@ source "$basedir/lib/s3.lib.sh"
 
 # Binding between modsecurity and nginx (since modsecurity can be used as standalone or with apache for instance)
 MODSECURITY_VERSION=${MODSECURITY_VERSION:-$default_modsecurity_version}
-MODSECURITY_NGINX_VERSION="v1.0.2"
+MODSECURITY_NGINX_VERSION="v${MODSECURITY_NGINX_VERSION:-$default_modsecurity_nginx_version}"
 MODSECURITY_NGINX_DIR="modsecurity-nginx-${MODSECURITY_NGINX_VERSION}"
 MODSECURITY_NGINX_TARBALL="${MODSECURITY_NGINX_DIR}.tar.gz"
 MODSECURITY_NGINX_URL="https://github.com/SpiderLabs/ModSecurity-nginx/releases/download/${MODSECURITY_NGINX_VERSION}/${MODSECURITY_NGINX_TARBALL}"
