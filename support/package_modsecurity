@@ -17,7 +17,7 @@ which s3cmd >/dev/null || apt-get install s3cmd
 # Tool required to unarchived .deb data.tar.zst archives (started with ubuntu 22.04)
 which zstd >/dev/null || apt-get install zstd
 # Tool required for building modsecurity
-which aclocal >/dev/null || apt-get install automake apt-get install libssl-dev libpcre3-dev libxml2-dev libcurl4-openssl-dev
+which aclocal >/dev/null || apt-get install automake libssl-dev libpcre3-dev libxml2-dev libcurl4-openssl-dev
 
 validate_env
 
