@@ -49,8 +49,10 @@ SH
 source "$BUILD_DIR/.profile.d/nginx.sh"
 
 cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
-[ ! -f $BUILD_DIR/vendor/nginx ]
+
+if [ ! -d "$BUILD_DIR/vendor/nginx" ] ; then
   mv /app/vendor/nginx "$BUILD_DIR/vendor"
+fi
 
 if [ "$ENABLE_MODSECURITY" = "true" ] ; then
   VENDORED_MODSECURITY=/app/vendor/modsecurity
