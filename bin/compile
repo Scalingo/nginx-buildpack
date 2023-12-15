@@ -108,6 +108,10 @@ fi
 `tail_log_plex ${LOG_FILES[@]}`
 
 (
+    php-fpm -p "/app/vendor/php"
+    echo "php-fpm" > \$pmsgr
+) &
+(
     nginx -p "\$basedir/vendor/nginx" -c "\$basedir/vendor/nginx/conf/nginx.conf"
     echo "nginx" > \$pmsgr
 ) &
