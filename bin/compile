@@ -87,7 +87,11 @@ mkfifo \$pmsgr
 
 [ -f \$basedir/servers.conf.erb ] && export HAS_SERVER_CONF=true
 
-erb base_nginx.conf.erb > "\$basedir/vendor/nginx/conf/nginx.conf"
+if [ -f "\$basedir/base_nginx.conf.erb" ] ; then
+  erb "\$basedir/base_nginx.conf.erb" > "\$basedir/vendor/nginx/conf/nginx.conf"
+else
+  erb base_nginx.conf.erb > "\$basedir/vendor/nginx/conf/nginx.conf"
+fi
 
 if [ -f "\$basedir/nginx.conf.erb" ] ; then
   erb "\$basedir/nginx.conf.erb" > "\$basedir/vendor/nginx/conf/site.conf"
