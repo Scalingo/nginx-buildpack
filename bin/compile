@@ -85,6 +85,12 @@ pmsgr=/tmp/pmsgr
 rm -f \$pmsgr
 mkfifo \$pmsgr
 
+# Loop through all environment variables. Work even though there are multi-lines
+# env variables.
+env -0 | while IFS='=' read -r -d '' name value; do
+    echo "env[\$name] = \\$\${name}" >> /app/vendor/php/etc/php-fpm.conf
+done
+
 [ -f \$basedir/servers.conf.erb ] && export HAS_SERVER_CONF=true
 
 if [ -f "\$basedir/base_nginx.conf.erb" ] ; then
