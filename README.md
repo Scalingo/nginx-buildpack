@@ -116,11 +116,11 @@ server {
   have their rules updated.
 - **ModSecurity**: embedded interpreter for query filtering. It is deployed as
   a plugin in most web servers (Nginx, Apache, etc…)\
-  **default version**: `3.0.9`
+  **default version**: `3.0.12`
 - **CRS**: Core Rule Set, it's the set of community rules edited under the
   OWASP governance that aim to protect against the Top 10 threat for web
   applications.\
-  **default version**: `3.3.4`
+  **default version**: `4.4.0`
 
 ### How-to deploy and test on Scalingo
 
