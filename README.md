@@ -120,7 +120,7 @@ server {
 - **CRS**: Core Rule Set, it's the set of community rules edited under the
   OWASP governance that aim to protect against the Top 10 threat for web
   applications.\
-  **default version**: `3.3.4`
+  **default version**: `4.4.0`
 
 ### How-to deploy and test on Scalingo
 
