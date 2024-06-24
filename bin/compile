@@ -61,7 +61,7 @@ if [ "$ENABLE_MODSECURITY" = "true" ] ; then
 SH
   mv /app/vendor/modsecurity "$BUILD_DIR/vendor"
 
-  status "Downloading latest CoreRuleSet ModSecurity protection rules"
+  status "Bundling ModSecurity CoreRuleSet ${MODSECURITY_CORE_RULE_SET_VERSION}"
   crs_url="https://github.com/coreruleset/coreruleset"
   curl --location --silent "${crs_url}/archive/refs/tags/v${MODSECURITY_CORE_RULE_SET_VERSION}.tar.gz" | tar -C "$BUILD_DIR/vendor/nginx/conf" -xzf -
   mv "$BUILD_DIR/vendor/nginx/conf/coreruleset-${MODSECURITY_CORE_RULE_SET_VERSION}" "$BUILD_DIR/vendor/nginx/conf/crs"
