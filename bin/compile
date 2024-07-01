@@ -49,7 +49,10 @@ SH
 source "$BUILD_DIR/.profile.d/nginx.sh"
 
 cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
-mv /app/vendor/nginx "$BUILD_DIR/vendor"
+
+if [ ! -d "$BUILD_DIR/vendor/nginx" ] ; then
+  mv /app/vendor/nginx "$BUILD_DIR/vendor"
+fi
 
 if [ "$ENABLE_MODSECURITY" = "true" ] ; then
   VENDORED_MODSECURITY=/app/vendor/modsecurity
@@ -82,9 +85,19 @@ pmsgr=/tmp/pmsgr
 rm -f \$pmsgr
 mkfifo \$pmsgr
 
+# Loop through all environment variables. Work even though there are multi-lines
+# env variables.
+env -0 | while IFS='=' read -r -d '' name value; do
+    echo "env[\$name] = \\$\${name}" >> /app/vendor/php/etc/php-fpm.conf
+done
+
 [ -f \$basedir/servers.conf.erb ] && export HAS_SERVER_CONF=true
 
-erb base_nginx.conf.erb > "\$basedir/vendor/nginx/conf/nginx.conf"
+if [ -f "\$basedir/base_nginx.conf.erb" ] ; then
+  erb "\$basedir/base_nginx.conf.erb" > "\$basedir/vendor/nginx/conf/nginx.conf"
+else
+  erb base_nginx.conf.erb > "\$basedir/vendor/nginx/conf/nginx.conf"
+fi
 
 if [ -f "\$basedir/nginx.conf.erb" ] ; then
   erb "\$basedir/nginx.conf.erb" > "\$basedir/vendor/nginx/conf/site.conf"
@@ -100,6 +113,36 @@ fi
 `init_log_plex ${LOG_FILES[@]}`
 `tail_log_plex ${LOG_FILES[@]}`
 
+if [[ -z \${WEB_CONCURRENCY:-} ]]; then
+    ram="512M"
+    container_size=\${CONTAINER_SIZE:-M}
+    if [ \$container_size = "S" ] ; then
+        ram="256M"
+    elif [ \$container_size = "L" ] ; then
+        ram="1024M"
+    elif [ \$container_size = "XL" ] ; then
+        ram="2048M"
+    elif [ \$container_size = "2XL" ] ; then
+        ram="4096M"
+    elif [ \$container_size = "3XL" ] ; then
+        ram="8182M"
+    fi
+
+    echo "Optimizing defaults for \${container_size} container..." >&2
+
+    # determine number of FPM processes to run
+    read WEB_CONCURRENCY php_memory_limit <<<\$(php -c "/app/vendor/php/etc/php.ini" /app/conf/autotune.php -y "/app/vendor/php/etc/php-fpm.conf" -t "\$DOCUMENT_ROOT" "\$ram")
+    [[ \$WEB_CONCURRENCY -lt 3 ]] && WEB_CONCURRENCY=3
+    export WEB_CONCURRENCY
+    echo "\${WEB_CONCURRENCY} processes at \${php_memory_limit}B memory limit." >&2
+else
+    echo "Using WEB_CONCURRENCY=\${WEB_CONCURRENCY} processes." >&2
+fi
+
+(
+    php-fpm -p "/app/vendor/php"
+    echo "php-fpm" > \$pmsgr
+) &
 (
     nginx -p "\$basedir/vendor/nginx" -c "\$basedir/vendor/nginx/conf/nginx.conf"
     echo "nginx" > \$pmsgr
