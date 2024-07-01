@@ -35,31 +35,34 @@ if [ ! -d "$BUILD_DIR/vendor" ] ; then
   mkdir -p "$BUILD_DIR/vendor"
 fi
 
-VENDORED_NGINX=/app/vendor/nginx
+#VENDORED_NGINX=/app/vendor/nginx
+VENDORED_NGINX="${HOME}/vendor/nginx"
+
 status "Bundling Nginx ${NGINX_VERSION}"
 fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
 
 test ! -d "$BUILD_DIR/.profile.d" && mkdir -p "$BUILD_DIR/.profile.d" || true
 
 cat > "$BUILD_DIR/.profile.d/nginx.sh" <<SH
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:${VENDORED_NGINX}/sbin:/app/vendor/bin:\$PATH
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:\${HOME}/vendor/nginx/sbin:\${HOME}/vendor/bin:\$PATH
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
 source "$BUILD_DIR/.profile.d/nginx.sh"
 
 cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
-mv /app/vendor/nginx "$BUILD_DIR/vendor"
+# mv /app/vendor/nginx "$BUILD_DIR/vendor"
 
 if [ "$ENABLE_MODSECURITY" = "true" ] ; then
-  VENDORED_MODSECURITY=/app/vendor/modsecurity
+  VENDORED_MODSECURITY="${HOME}/vendor/modsecurity"
   fetch_engine_package modsecurity "$MODSECURITY_VERSION" "${VENDORED_MODSECURITY}" | indent
 
   cat > "$BUILD_DIR/.profile.d/modsecurity.sh" <<SH
   export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HOME/vendor/modsecurity/usr/lib/x86_64-linux-gnu:\$HOME/vendor/modsecurity/lib
   erb "\$HOME/vendor/nginx/conf/modsecurity.conf.erb" > "\$HOME/vendor/nginx/conf/modsecurity.conf"
 SH
-  mv /app/vendor/modsecurity "$BUILD_DIR/vendor"
+
+  # mv /app/vendor/modsecurity "$BUILD_DIR/vendor"
 
   status "Bundling ModSecurity CoreRuleSet ${MODSECURITY_CORE_RULE_SET_VERSION}"
   crs_url="https://github.com/coreruleset/coreruleset"

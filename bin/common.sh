@@ -67,7 +67,10 @@ function fetch_engine_package() {
   fi
 
   mkdir -p "$location"
-  tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
+
+  tar --overwrite --extract --gzip \
+      --file="${CACHE_DIR}/package/${package}.tgz" \
+      --directory="${location}"
 }
 
 init_log_plex() {
