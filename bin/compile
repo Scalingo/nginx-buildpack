@@ -27,43 +27,41 @@ NGINX_VERSION=${NGINX_VERSION:-$DEFAULT_NGINX}
 MODSECURITY_VERSION=${MODSECURITY_VERSION:-$default_modsecurity_version}
 MODSECURITY_CORE_RULE_SET_VERSION="${MODSECURITY_CORE_RULE_SET_VERSION:-$default_modsecurity_coreruleset_version}"
 
-mkdir -p "$CACHE_DIR/package"
-mkdir -p $BUILD_DIR/bin
+mkdir -p "${CACHE_DIR}/package"
+mkdir -p "${BUILD_DIR}/bin"
+mkdir -p "${BUILD_DIR}/vendor"
+mkdir -p "${BUILD_DIR}/.profile.d"
+
 export PATH="$BUILD_DIR/bin:$PATH"
 
-if [ ! -d "$BUILD_DIR/vendor" ] ; then
-  mkdir -p "$BUILD_DIR/vendor"
-fi
-
-VENDORED_NGINX=/app/vendor/nginx
 status "Bundling Nginx ${NGINX_VERSION}"
-fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
-
-test ! -d "$BUILD_DIR/.profile.d" && mkdir -p "$BUILD_DIR/.profile.d" || true
+fetch_engine_package nginx "$NGINX_VERSION" "${HOME}/vendor/nginx" | indent
 
 cat > "$BUILD_DIR/.profile.d/nginx.sh" <<SH
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:${VENDORED_NGINX}/sbin:/app/vendor/bin:\$PATH
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:\${HOME}/vendor/nginx/sbin:\${HOME}/vendor/bin:\$PATH
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
 source "$BUILD_DIR/.profile.d/nginx.sh"
 
 cp "$basedir/../config/nginx.conf.erb" "$BUILD_DIR/base_nginx.conf.erb"
-mv /app/vendor/nginx "$BUILD_DIR/vendor"
+
 
 if [ "$ENABLE_MODSECURITY" = "true" ] ; then
-  VENDORED_MODSECURITY=/app/vendor/modsecurity
-  fetch_engine_package modsecurity "$MODSECURITY_VERSION" "${VENDORED_MODSECURITY}" | indent
+
+  fetch_engine_package modsecurity "$MODSECURITY_VERSION" \
+    "${HOME}/vendor/modsecurity" | indent
 
   cat > "$BUILD_DIR/.profile.d/modsecurity.sh" <<SH
   export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HOME/vendor/modsecurity/usr/lib/x86_64-linux-gnu:\$HOME/vendor/modsecurity/lib
   erb "\$HOME/vendor/nginx/conf/modsecurity.conf.erb" > "\$HOME/vendor/nginx/conf/modsecurity.conf"
 SH
-  mv /app/vendor/modsecurity "$BUILD_DIR/vendor"
 
   status "Bundling ModSecurity CoreRuleSet ${MODSECURITY_CORE_RULE_SET_VERSION}"
   crs_url="https://github.com/coreruleset/coreruleset"
-  curl --location --silent "${crs_url}/archive/refs/tags/v${MODSECURITY_CORE_RULE_SET_VERSION}.tar.gz" | tar -C "$BUILD_DIR/vendor/nginx/conf" -xzf -
+  curl --location --silent "${crs_url}/archive/refs/tags/v${MODSECURITY_CORE_RULE_SET_VERSION}.tar.gz" \
+    | tar -C "$BUILD_DIR/vendor/nginx/conf" -xzf -
+
   mv "$BUILD_DIR/vendor/nginx/conf/coreruleset-${MODSECURITY_CORE_RULE_SET_VERSION}" "$BUILD_DIR/vendor/nginx/conf/crs"
 
   cp "$basedir/../config/modsec/unicode.mapping" "$BUILD_DIR/vendor/nginx/conf"
@@ -71,8 +69,6 @@ SH
   cp "$basedir/../config/modsec/modsec-nginx.conf" "$BUILD_DIR/vendor/nginx/conf"
   cp "$basedir/../config/modsec/crs-config.conf" "$BUILD_DIR/vendor/nginx/conf"
 fi
-
-mkdir -p "bin"
 
 cat > "$BUILD_DIR/bin/run" <<SH
 #!/usr/bin/env bash
