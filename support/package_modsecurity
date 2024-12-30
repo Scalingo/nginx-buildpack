@@ -13,7 +13,7 @@ source "$basedir/lib/s3.lib.sh"
 source "$basedir/lib/deb.lib.sh"
 
 # Tool required to upload nginx build artifacts
-which s3cmd >/dev/null || apt-get install s3cmd
+which aws >/dev/null || apt-get install awscli
 # Tool required to unarchived .deb data.tar.zst archives (started with ubuntu 22.04)
 which zstd >/dev/null || apt-get install zstd
 # Tool required for building modsecurity
@@ -108,7 +108,7 @@ pushd /app/vendor/modsecurity >/dev/null
   tar zcf "${tempdir}/${package_filepath}" .
 popd >/dev/null
 
-s3_upload "$S3_BUCKET" "${package_filepath}" "/${STACK}/${package_filepath}" > /dev/null
+s3_upload "$S3_BUCKET" "${package_filepath}" "${STACK}/${package_filepath}" > /dev/null
 "$basedir/manifest" modsecurity
 "$basedir/package-checksum" "modsecurity-${MODSECURITY_VERSION}"
 
