@@ -51,7 +51,7 @@ tar -xzf "pcre-${pcre_version}.tar.gz"
 status "Downloading dependency zlib ${zlib_version}"
 
 zlib_filename="zlib-${zlib_version}.tar.gz"
-s3_download "$S3_BUCKET" "/${STACK}/zlib/${zlib_filename}" "$zlib_filename" > /dev/null
+s3_download "$S3_BUCKET" "${STACK}/zlib/${zlib_filename}" "$zlib_filename" > /dev/null
 tar -xzf "$zlib_filename"
 
 status "Downloading Nginx ${nginx_version}"
@@ -63,7 +63,7 @@ nginx_configure_args="--prefix=/app/vendor/nginx --with-http_ssl_module --with-h
 if [ "$NO_MODSECURITY_MODULE" != "true" ] ; then
   status "Downloading ModSecurity ${MODSECURITY_VERSION}"
   modsecurity_filename="modsecurity-${MODSECURITY_VERSION}.tgz"
-  s3_download "$S3_BUCKET" "/${STACK}/package/${modsecurity_filename}" "$modsecurity_filename" > /dev/null
+  s3_download "$S3_BUCKET" "${STACK}/package/${modsecurity_filename}" "$modsecurity_filename" > /dev/null
   modsecurity_dir="/app/vendor/modsecurity"
   mkdir -p "$modsecurity_dir"
   tar --extract --ungzip --file "$modsecurity_filename" --directory "$modsecurity_dir"
@@ -97,7 +97,7 @@ pushd /app/vendor/nginx >/dev/null
 tar zcvf "${tempdir}/${nginx_filepath}" .
 popd >/dev/null
 
-s3_upload "$S3_BUCKET" "$nginx_filepath" "/${STACK}/${nginx_filepath}"
+s3_upload "$S3_BUCKET" "$nginx_filepath" "${STACK}/${nginx_filepath}"
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"
 
