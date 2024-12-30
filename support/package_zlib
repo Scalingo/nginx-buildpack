@@ -18,4 +18,4 @@ mkdir zlib
 mv zlib-${zlib_version}.tar.gz zlib
 
 zlib_filepath="zlib/zlib-${zlib_version}.tar.gz"
-s3_upload "$S3_BUCKET" "$zlib_filepath" "/${STACK}/${zlib_filepath}"
+s3_upload "$S3_BUCKET" "$zlib_filepath" "${STACK}/${zlib_filepath}"
