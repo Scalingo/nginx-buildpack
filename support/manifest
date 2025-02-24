@@ -26,26 +26,26 @@ validate_env
 
 # make a temp directory
 tempdir=$(mktmpdir manifest)
-pushd $tempdir > /dev/null
 
 echo "-----> Manifest for $manifest_type"
 
+manifest_file="manifest.${manifest_type}"
+
 s3_list "$S3_BUCKET" "${STACK}/package/" \
 	| jq -r ".Contents[].Key" \
-    | sed "s/^.\+$STACK\/package\///" \
-    | grep "\.tgz$" \
-    | grep "^${manifest_type}" \
-    | grep -v -e ".md5" \
-    | sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
-    | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' \
-    | sort -r \
-    | cut -d" " -f2 \
-    > manifest.${manifest_type}
+	| sed "s/${STACK}\/package\///" \
+	| grep "\.tgz$" \
+	| grep "^${manifest_type}" \
+	| grep -v -e ".md5" \
+	| sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
+	| awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' \
+	| sort -r \
+	| cut -d" " -f2 \
+	> "${tempdir}/${manifest_file}"
 
-cat "manifest.${manifest_type}" | indent
+cat "${tempdir}/${manifest_file}" | indent
 
 echo
-echo "-----> Uploading manifest for ${manifest_type} to S3"
+echo "-----> Uploading manifest to S3"
 
-manifest_filename="manifest.${manifest_type}"
-s3_upload "$S3_BUCKET" "$manifest_filename" "${STACK}/${manifest_filename}"
+s3_upload "$S3_BUCKET" "${tempdir}/${manifest_file}" "${STACK}/${manifest_file}"
