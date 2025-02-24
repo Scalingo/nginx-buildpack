@@ -25,7 +25,7 @@ fi
 validate_env
 
 # make a temp directory
-tempdir=$(mktmpdir manifest)
+tempdir="$( mktmpdir manifest )"
 
 echo "-----> Manifest for $manifest_type"
 
@@ -43,9 +43,15 @@ s3_list "$S3_BUCKET" "${STACK}/package/" \
 	| cut -d" " -f2 \
 	> "${tempdir}/${manifest_file}"
 
+if [ ! -s "${tempdir}/${manifest_file}" ]; then
+	echo "The manifest that has juts been generated is empty." >&2
+	echo "This is not OK. Aborting." >&2
+	exit 2
+fi
+
 cat "${tempdir}/${manifest_file}" | indent
 
 echo
 echo "-----> Uploading manifest to S3"
 
-s3_upload "$S3_BUCKET" "${tempdir}/${manifest_file}" "${STACK}/${manifest_file}"
+s3_upload "${S3_BUCKET}" "${tempdir}/${manifest_file}" "${STACK}/${manifest_file}"
