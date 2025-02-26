@@ -44,7 +44,7 @@ s3_list "$S3_BUCKET" "${STACK}/package/" \
 	> "${tempdir}/${manifest_file}"
 
 if [ ! -s "${tempdir}/${manifest_file}" ]; then
-	echo "The manifest that has juts been generated is empty." >&2
+	echo "The manifest that has just been generated is empty." >&2
 	echo "This is not OK. Aborting." >&2
 	exit 2
 fi
