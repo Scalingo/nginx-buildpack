@@ -100,18 +100,21 @@ tar zcvf "${tempdir}/${nginx_filepath}" .
 popd >/dev/null
 
 
-if ! s3_upload "$S3_BUCKET" "$nginx_filepath" "${STACK}/${nginx_filepath}"; then
+if ! s3_upload "${S3_BUCKET}" "${nginx_filepath}" "${STACK}/${nginx_filepath}"; then
 	echo "Unable to upload nginx package to Object Storage!" >&2
+	exit 2
 fi
 
-if ! "$basedir/manifest" "nginx"; then
+if ! "${basedir}/manifest" "nginx"; then
 	echo "Unable to generate/upload manifest for nginx." >&2
 	echo "Something's wrong and needs to be fixed." >&2
+	exit 3
 fi
 
-if ! "$basedir/package-checksum" "nginx-${nginx_version}"; then
+if ! "${basedir}/package-checksum" "nginx-${nginx_version}"; then
 	echo "Unable to generate checksums for nginx." >&2
 	echo "Something's wrong and needs to be fixed." >&2
+	exit 4
 fi
 
 status "Done building Nginx package!"
