@@ -17,7 +17,7 @@ CACHE_DIR="$2"
 export_env_dir "$3"
 
 VENDOR_BASE_URL="${VENDOR_URL:-https://nginx-buildpack.s3.amazonaws.com}"
-STACK="${STACK:-scalingo-20}"
+STACK="${STACK:-scalingo-22}"
 VENDOR_URL="${VENDOR_BASE_URL}/${STACK}"
 LOG_FILES=(vendor/nginx/logs/access.log vendor/nginx/logs/error.log)
 
