@@ -75,7 +75,6 @@ if [ "$NO_MODSECURITY_MODULE" != "true" ] ; then
   export MODSECURITY_LIB="${modsecurity_dir}/lib"
 
   status "Installing modsecurity-nginx ${MODSECURITY_NGINX_VERSION}"
-  pwd
   curl --remote-name --location --silent "$MODSECURITY_NGINX_URL"
   mkdir --parents "${MODSECURITY_NGINX_DIR}"
   tar --extract --ungzip --file "$MODSECURITY_NGINX_TARBALL" --directory "${MODSECURITY_NGINX_DIR}" --strip-components=1
