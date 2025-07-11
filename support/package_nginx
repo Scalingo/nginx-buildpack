@@ -70,15 +70,17 @@ if [ "$NO_MODSECURITY_MODULE" != "true" ] ; then
   mkdir -p "$modsecurity_dir"
   tar --extract --ungzip --file "$modsecurity_filename" --directory "$modsecurity_dir"
   # Required for Nginx compilation with modsecurity-nginx module
+  export LD_LIBRARY_PATH="${modsecurity_dir}/usr/lib/x86_64-linux-gnu"
   export MODSECURITY_INC="${modsecurity_dir}/include"
   export MODSECURITY_LIB="${modsecurity_dir}/lib"
 
   status "Installing modsecurity-nginx ${MODSECURITY_NGINX_VERSION}"
   curl --remote-name --location --silent "$MODSECURITY_NGINX_URL"
-  tar --extract --ungzip --file "$MODSECURITY_NGINX_TARBALL"
+  mkdir --parents "${MODSECURITY_NGINX_DIR}"
+  tar --extract --ungzip --file "$MODSECURITY_NGINX_TARBALL" --directory "${MODSECURITY_NGINX_DIR}" --strip-components=1
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
-  nginx_configure_args="$nginx_configure_args --add-dynamic-module=../${MODSECURITY_NGINX_DIR}"
+  nginx_configure_args="$nginx_configure_args --add-dynamic-module=../${MODSECURITY_NGINX_DIR} --with-compat"
 fi
 
 status "Compile Nginx ${nginx_version}"
