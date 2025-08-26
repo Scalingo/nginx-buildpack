@@ -53,6 +53,7 @@ tar -xzf "pcre-${pcre_version}.tar.gz"
 status "Downloading dependency zlib ${zlib_version}"
 
 zlib_filename="zlib-${zlib_version}.tar.gz"
+# If this returns a 404, this probably means that you should first call `package_zlib` before calling this script
 s3_download "$S3_BUCKET" "${STACK}/zlib/${zlib_filename}" "$zlib_filename" > /dev/null
 tar -xzf "$zlib_filename"
 
