@@ -36,7 +36,7 @@ declare -A geoip_version=(["scalingo-22"]="1.6.12-6build1")
 declare -A yajl_version=(["scalingo-22"]="2.1.0-3build2")
 declare -A lmdb_version=(["scalingo-22"]="0.9.24-1build2")
 declare -A libfuzzy_version=(["scalingo-22"]="2.14.1+git20180629.57fcfff-2")
-declare -A lua_version=(["scalingo-22"]="5.3.6-1build1")
+declare -A lua_version=(["scalingo-22"]="5.4.7-1")
 
 tempdir=$(mktmpdir modsecurity)
 cd $tempdir
@@ -75,11 +75,11 @@ curl --remote-name --location --silent "${pkgs_url}/universe/s/ssdeep/libfuzzy-d
 extract_deb "libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
-status "Packaging Lua (liblua5.3) ${lua_version[$deps_stack]}"
-curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.3/liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.3/liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb"
-extract_deb "liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
-extract_deb "liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
+status "Packaging Lua (liblua5.4) ${lua_version[$deps_stack]}"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.4/liblua5.4-0_${lua_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.4/liblua5.4-dev_${lua_version[$deps_stack]}_amd64.deb"
+extract_deb "liblua5.4-0_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
+extract_deb "liblua5.4-dev_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Downloading ModSecurity $MODSECURITY_VERSION"
 curl --remote-name --location --silent "$MODSECURITY_URL"
