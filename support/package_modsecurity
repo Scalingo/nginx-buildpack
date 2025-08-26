@@ -12,7 +12,7 @@ source "$basedir/lib/utils"
 source "$basedir/lib/s3.lib.sh"
 source "$basedir/lib/deb.lib.sh"
 
-pkgs_url="https://mirrors.edge.kernel.org/ubuntu/pool/main"
+pkgs_url="https://mirrors.edge.kernel.org/ubuntu/pool"
 
 # Tool required to upload nginx build artifacts
 which aws >/dev/null || apt-get install awscli
@@ -52,32 +52,32 @@ fi
 
 status "Packaging libgeoip ${geoip_version[$deps_stack]}"
 
-curl --remote-name --location "${pkgs_url}/g/geoip/libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location "${pkgs_url}/g/geoip/libgeoip1_${geoip_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location "${pkgs_url}/main/g/geoip/libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location "${pkgs_url}/main/g/geoip/libgeoip1_${geoip_version[$deps_stack]}_amd64.deb"
 extract_deb "libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libgeoip1_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Packaging libyajl ${yajl_version[$deps_stack]}"
-curl --remote-name --location --silent "${pkgs_url}/y/yajl/libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "${pkgs_url}/y/yajl/libyajl2_${yajl_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/y/yajl/libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/y/yajl/libyajl2_${yajl_version[$deps_stack]}_amd64.deb"
 extract_deb "libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libyajl2_${yajl_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Packaging liblmdb ${lmdb_version[$deps_stack]}"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/main/l/lmdb/liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/main/l/lmdb/liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lmdb/liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lmdb/liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb"
 extract_deb "liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Packaging ssdeep (libfuzzy) ${libfuzzy_version[$deps_stack]}"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb"
 extract_deb "libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Packaging Lua (liblua5.3) ${lua_version[$deps_stack]}"
-curl --remote-name --location --silent "${pkgs_url}/l/lua5.3/liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "${pkgs_url}/l/lua5.3/liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.3/liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.3/liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb"
 extract_deb "liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
