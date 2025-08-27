@@ -85,14 +85,11 @@ fi
 
 status "Compile Nginx ${nginx_version}"
 
-pushd nginx-${nginx_version} >/dev/null && \
-  ./configure $nginx_configure_args && \
-  make > /dev/null && make install && \
-  popd > /dev/null
-rc=$?
-if [[ $rc -ne 0 ]]; then
-  error "Fail to compile Nginx"
-fi
+pushd nginx-${nginx_version} > /dev/null
+./configure $nginx_configure_args
+make > /dev/null
+make install
+popd > /dev/null
 
 status "Uploading package to S3 ${S3_URL}/package/nginx-${nginx_version}.tgz"
 mkdir package

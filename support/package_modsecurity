@@ -3,7 +3,9 @@
 # Inspired from https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes-for-v3.x
 
 set -e -o pipefail
-set -x
+if [[ -n "$DEBUG" ]]; then
+  set -x
+fi
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../bin/common.sh"
@@ -52,8 +54,8 @@ fi
 
 status "Packaging libgeoip ${geoip_version[$deps_stack]}"
 
-curl --remote-name --location "${pkgs_url}/main/g/geoip/libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location "${pkgs_url}/main/g/geoip/libgeoip1_${geoip_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/g/geoip/libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/g/geoip/libgeoip1_${geoip_version[$deps_stack]}_amd64.deb"
 extract_deb "libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libgeoip1_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
@@ -85,21 +87,21 @@ status "Downloading ModSecurity $MODSECURITY_VERSION"
 curl --remote-name --location --silent "$MODSECURITY_URL"
 tar --extract --ungzip --file "$MODSECURITY_TARBALL"
 pushd "$MODSECURITY_DIR" >/dev/null
-  ./build.sh && \
-  # SSDEEP is not handled like others, it's not possible to easily tweak the path, doing it manually
-  sed -i "s+^SSDEEP_POSSIBLE_PATHS=.*+SSDEEP_POSSIBLE_PATHS=${install_dir}/usr+" "./configure" && \
-  sed -i "s+^LUA_POSSIBLE_PATHS=.*+LUA_POSSIBLE_PATHS=${install_dir}/usr+" "./configure" && \
-  sed -i "s+LUA_CFLAGS=\"-I\${lua_inc_path}\"+LUA_CFLAGS=\"-I\${lua_inc_path} -I\${lua_inc_path}/../x86_64-linux-gnu\"+" "./configure" && \
-  ./configure \
-     "--prefix=${install_dir}" \
-     "--with-geoip=${install_dir}/usr" \
-     "--with-yajl=${install_dir}/usr" \
-     "--with-lmdb=${install_dir}/usr" \
-     "--with-ssdeep=yes" \
-     "--with-lua=${install_dir}/usr" \
-     --disable-examples && \
-  make -j 4 && \
-  make install
+./build.sh
+# SSDEEP is not handled like others, it's not possible to easily tweak the path, doing it manually
+sed -i "s+^SSDEEP_POSSIBLE_PATHS=.*+SSDEEP_POSSIBLE_PATHS=${install_dir}/usr+" "./configure"
+sed -i "s+^LUA_POSSIBLE_PATHS=.*+LUA_POSSIBLE_PATHS=${install_dir}/usr+" "./configure"
+sed -i "s+LUA_CFLAGS=\"-I\${lua_inc_path}\"+LUA_CFLAGS=\"-I\${lua_inc_path} -I\${lua_inc_path}/../x86_64-linux-gnu\"+" "./configure"
+./configure \
+   "--prefix=${install_dir}" \
+   "--with-geoip=${install_dir}/usr" \
+   "--with-yajl=${install_dir}/usr" \
+   "--with-lmdb=${install_dir}/usr" \
+   "--with-ssdeep=yes" \
+   "--with-lua=${install_dir}/usr" \
+   --disable-examples > /dev/null
+make -j 4 > /dev/null
+make install > /dev/null
 popd >/dev/null
 
 status "Uploading package to S3 ${S3_URL}/package/modsecurity-${MODSECURITY_VERSION}.tgz"
