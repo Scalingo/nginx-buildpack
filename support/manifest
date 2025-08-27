@@ -10,6 +10,10 @@
 # Why? So tools like semver are able to check which versions are available to
 # use and when a new version is released it can be automatically taken into account
 
+if [[ -n "$DEBUG" ]]; then
+  set -x
+fi
+
 manifest_type="$1"
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
