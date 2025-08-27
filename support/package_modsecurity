@@ -12,7 +12,7 @@ source "$basedir/lib/utils"
 source "$basedir/lib/s3.lib.sh"
 source "$basedir/lib/deb.lib.sh"
 
-pkgs_url="https://mirrors.edge.kernel.org/ubuntu/pool/main"
+pkgs_url="https://mirrors.edge.kernel.org/ubuntu/pool"
 
 # Tool required to upload nginx build artifacts
 which aws >/dev/null || apt-get install awscli
@@ -32,12 +32,11 @@ MODSECURITY_URL="https://github.com/SpiderLabs/ModSecurity/releases/download/v${
 # We declare associative array (a hash), syntax is
 # declare -A var_name=(["key1"]="val1" ["key2"]="val2" ...)
 # echo ${var_name[key1]} # display: "val1"
-declare -A geoip_version=(["scalingo-22"]="1.6.12-6build1" ["scalingo-20"]="1.6.12-6build1" ["scalingo-18"]="1.6.12-1")
-declare -A yajl_version=(["scalingo-22"]="2.1.0-3build2" ["scalingo-20"]="2.1.0-3" ["scalingo-18"]="2.1.0-2build1")
-declare -A lmdb_version=(["scalingo-22"]="0.9.24-1build2" ["scalingo-20"]="0.9.24-1" ["scalingo-18"]="0.9.21-1")
-declare -A lmdb_repo=(["scalingo-22"]="main" ["scalingo-20"]="main" ["scalingo-18"]="universe")
-declare -A libfuzzy_version=(["scalingo-22"]="2.14.1+git20180629.57fcfff-2" ["scalingo-20"]="2.14.1+git20180629.57fcfff-1build1" ["scalingo-18"]="2.14-1")
-declare -A lua_version=(["scalingo-22"]="5.3.6-1build1" ["scalingo-20"]="5.3.3-1.1ubuntu2" ["scalingo-18"]="5.3.3-1ubuntu0.18.04.1")
+declare -A geoip_version=(["scalingo-22"]="1.6.12-6build1")
+declare -A yajl_version=(["scalingo-22"]="2.1.0-3build2")
+declare -A lmdb_version=(["scalingo-22"]="0.9.24-1build2")
+declare -A libfuzzy_version=(["scalingo-22"]="2.14.1+git20180629.57fcfff-2")
+declare -A lua_version=(["scalingo-22"]="5.3.6-1build1")
 
 tempdir=$(mktmpdir modsecurity)
 cd $tempdir
@@ -51,36 +50,34 @@ if [[ "$STACK" =~ .*minimal$ ]] ; then
   deps_stack=$(echo $STACK | sed -e 's/-minimal//')
 fi
 
-declare -A deps_versions
-
 status "Packaging libgeoip ${geoip_version[$deps_stack]}"
 
-curl --remote-name --location "${pkgs_url}/g/geoip/libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location "${pkgs_url}/g/geoip/libgeoip1_${geoip_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location "${pkgs_url}/main/g/geoip/libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location "${pkgs_url}/main/g/geoip/libgeoip1_${geoip_version[$deps_stack]}_amd64.deb"
 extract_deb "libgeoip-dev_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libgeoip1_${geoip_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Packaging libyajl ${yajl_version[$deps_stack]}"
-curl --remote-name --location --silent "${pkgs_url}/y/yajl/libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "${pkgs_url}/y/yajl/libyajl2_${yajl_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/y/yajl/libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/y/yajl/libyajl2_${yajl_version[$deps_stack]}_amd64.deb"
 extract_deb "libyajl-dev_${yajl_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libyajl2_${yajl_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
-status "Packaging liblmdb ${lmdb_repo[$deps_stack]}"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$deps_stack]}/l/lmdb/liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/${lmdb_repo[$deps_stack]}/l/lmdb/liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb"
+status "Packaging liblmdb ${lmdb_version[$deps_stack]}"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lmdb/liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lmdb/liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb"
 extract_deb "liblmdb-dev_${lmdb_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "liblmdb0_${lmdb_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Packaging ssdeep (libfuzzy) ${libfuzzy_version[$deps_stack]}"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "https://mirrors.kernel.org/ubuntu/pool/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/universe/s/ssdeep/libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/universe/s/ssdeep/libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb"
 extract_deb "libfuzzy2_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "libfuzzy-dev_${libfuzzy_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
 status "Packaging Lua (liblua5.3) ${lua_version[$deps_stack]}"
-curl --remote-name --location --silent "${pkgs_url}/l/lua5.3/liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb"
-curl --remote-name --location --silent "${pkgs_url}/l/lua5.3/liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.3/liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb"
+curl --remote-name --location --silent "${pkgs_url}/main/l/lua5.3/liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb"
 extract_deb "liblua5.3-0_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "liblua5.3-dev_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
 
