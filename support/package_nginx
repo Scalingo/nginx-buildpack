@@ -62,7 +62,16 @@ status "Downloading Nginx ${nginx_version}"
 curl --location --remote-name --silent "https://nginx.org/download/nginx-${nginx_version}.tar.gz"
 tar -xzf "nginx-${nginx_version}.tar.gz"
 
-nginx_configure_args="--prefix=/app/vendor/nginx --with-http_ssl_module --with-http_auth_request_module --with-pcre=../pcre-${pcre_version} --with-zlib=../zlib-${zlib_version} --with-http_realip_module"
+nginx_configure_args=(
+	--prefix=/app/vendor/nginx
+	--with-http_ssl_module
+	--with-http_auth_request_module
+	--with-http_realip_module
+	--with-http_secure_link_module
+	--with-pcre=../pcre-${pcre_version}
+	--with-zlib=../zlib-${zlib_version}
+)
+
 if [ "$NO_MODSECURITY_MODULE" != "true" ] ; then
   status "Downloading ModSecurity ${MODSECURITY_VERSION}"
   modsecurity_filename="modsecurity-${MODSECURITY_VERSION}.tgz"
@@ -81,13 +90,13 @@ if [ "$NO_MODSECURITY_MODULE" != "true" ] ; then
   tar --extract --ungzip --file "$MODSECURITY_NGINX_TARBALL" --directory "${MODSECURITY_NGINX_DIR}" --strip-components=1
   nginx_config_dir="/app/vendor/nginx/etc/nginx"
   mkdir -p "${nginx_config_dir}/modules" "${nginx_config_dir}/modsec"
-  nginx_configure_args="$nginx_configure_args --add-dynamic-module=../${MODSECURITY_NGINX_DIR} --with-compat"
+  nginx_configure_args+=( --add-dynamic-module=../${MODSECURITY_NGINX_DIR} --with-compat )
 fi
 
 status "Compile Nginx ${nginx_version}"
 
 pushd nginx-${nginx_version} > /dev/null
-./configure $nginx_configure_args
+./configure "${nginx_configure_args[@]}"
 make > /dev/null
 make install
 popd > /dev/null
