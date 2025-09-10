@@ -26,7 +26,9 @@ zlib_version="$default_zlib_version"
 
 validate_env
 
-which aws >/dev/null || apt-get install awscli
+# Required dependencies:
+apt install --yes \
+	libpcre3-dev
 
 export PATH=${basedir}/../vendor/bin:$PATH
 
