@@ -28,7 +28,8 @@ validate_env
 
 # Required dependencies:
 apt install --yes \
-	libpcre3-dev
+	libpcre3-dev \
+	libssl-dev
 
 export PATH=${basedir}/../vendor/bin:$PATH
 
