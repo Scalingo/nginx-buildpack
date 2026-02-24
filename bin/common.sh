@@ -59,7 +59,10 @@ function fetch_engine_package() {
 
   mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
 
-  if [ "$cache_checksum" != "$checksum" ]; then
+  # If the checksum in cache is empty, or if it doesn't match,
+  # Then re-download the package
+  # Else we are sure to have a valid checksum and package.
+  if [[ -z "${cache_checksum}" || "${cache_checksum}" != "$checksum" ]; then
     curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$package_url" -L -s > "$CACHE_DIR/package/${package}.tgz"
     echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
   else
