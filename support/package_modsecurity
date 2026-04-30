@@ -17,11 +17,19 @@ source "$basedir/lib/deb.lib.sh"
 pkgs_url="https://mirrors.edge.kernel.org/ubuntu/pool"
 
 # Tool required to upload nginx build artifacts
-which aws >/dev/null || apt-get install --yes awscli
+which aws >/dev/null || apt install --yes awscli
+
 # Tool required to unarchived .deb data.tar.zst archives (started with ubuntu 22.04)
-which zstd >/dev/null || apt-get install --yes zstd
+which zstd >/dev/null || apt install --yes zstd
+
 # Tool required for building ModSecurity
-apt-get install --yes automake libssl-dev libpcre3-dev libxml2-dev libcurl4-openssl-dev
+apt install --yes \
+	automake \
+	libssl-dev \
+	libpcre2-dev \
+	libpcre3-dev \
+	libxml2-dev \
+	libcurl4-openssl-dev
 
 validate_env
 
@@ -43,7 +51,7 @@ fi
 declare -A geoip_version=(["scalingo-24"]="1.6.12-6build1" ["scalingo-22"]="1.6.12-6build1")
 declare -A yajl_version=(["scalingo-24"]="2.1.0-5build1" ["scalingo-22"]="2.1.0-3build2")
 declare -A lmdb_version=(["scalingo-24"]="0.9.31-1build1" ["scalingo-22"]="0.9.24-1build2")
-declare -A libfuzzy_version=(["scalingo-24"]="2.14.1+git20180629.57fcfff-3" ["scalingo-22"]="2.14.1+git20180629.57fcfff-2")
+declare -A libfuzzy_version=(["scalingo-24"]="2.14.1+git20180629.57fcfff-3build1" ["scalingo-22"]="2.14.1+git20180629.57fcfff-2")
 declare -A lua_version=(["scalingo-24"]="5.4.7-1" ["scalingo-22"]="5.3.6-1build1")
 lua_major_minor_version=$(echo "${lua_version[$deps_stack]}" | cut -d "." -f1-2)
 
@@ -83,27 +91,39 @@ curl --remote-name --location --silent "${pkgs_url}/main/l/lua${lua_major_minor_
 curl --remote-name --location --silent "${pkgs_url}/main/l/lua${lua_major_minor_version}/liblua${lua_major_minor_version}-dev_${lua_version[$deps_stack]}_amd64.deb"
 extract_deb "liblua${lua_major_minor_version}-0_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
 extract_deb "liblua${lua_major_minor_version}-dev_${lua_version[$deps_stack]}_amd64.deb" "${install_dir}"
+# 2026-04-30 - fku
+# Move lua files one dir up. This allows configure + make scripts to find it.
+pushd "${install_dir}/usr/include" > /dev/null
+mv ./lua*/* ./
+mv ./x86_64-linux-gnu/* ./
+popd > /dev/null
 
 status "Downloading ModSecurity $MODSECURITY_VERSION"
 curl --remote-name --location --silent "$MODSECURITY_URL"
 tar --extract --ungzip --file "$MODSECURITY_TARBALL"
 pushd "$MODSECURITY_DIR" >/dev/null
+
+status "Launching build.sh script"
 ./build.sh
-# SSDEEP is not handled like others, it's not possible to easily tweak the path, doing it manually
-sed -i "s+^SSDEEP_POSSIBLE_PATHS=.*+SSDEEP_POSSIBLE_PATHS=${install_dir}/usr+" "./configure"
-sed -i "s+^LUA_POSSIBLE_PATHS=.*+LUA_POSSIBLE_PATHS=${install_dir}/usr+" "./configure"
-sed -i "s+LUA_CFLAGS=\"-I\${lua_inc_path}\"+LUA_CFLAGS=\"-I\${lua_inc_path} -I\${lua_inc_path}/../x86_64-linux-gnu\"+" "./configure"
+
+status "Compiling (configure)"
 ./configure \
    "--prefix=${install_dir}" \
    "--with-geoip=${install_dir}/usr" \
    "--with-yajl=${install_dir}/usr" \
    "--with-lmdb=${install_dir}/usr" \
-   "--with-ssdeep=yes" \
+   "--with-ssdeep=${install_dir}/usr" \
    "--with-lua=${install_dir}/usr" \
    --disable-examples > /dev/null
+
+status "Compiling (make)"
 make -j 4 > /dev/null
+
+status "Compiling (make install)"
 make install > /dev/null
+
 popd >/dev/null
+
 
 status "Uploading package to S3 ${S3_URL}/package/modsecurity-${MODSECURITY_VERSION}.tgz"
 package_filepath="package/modsecurity-${MODSECURITY_VERSION}.tgz"
