@@ -87,7 +87,7 @@ extract_deb "liblua${lua_major_minor_version}-dev_${lua_version[$deps_stack]}_am
 # Move lua files one dir up. This allows configure + make scripts to find it.
 pushd "${install_dir}/usr/include" > /dev/null
 mv ./lua*/* ./
-mv x86_64-linux-gnu/* ./
+mv ./x86_64-linux-gnu/* ./
 popd > /dev/null
 
 status "Downloading ModSecurity $MODSECURITY_VERSION"
