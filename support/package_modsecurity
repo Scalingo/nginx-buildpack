@@ -27,7 +27,6 @@ apt install --yes \
 	automake \
 	libssl-dev \
 	libpcre2-dev \
-	libpcre3-dev \
 	libxml2-dev \
 	libcurl4-openssl-dev
 
@@ -48,11 +47,11 @@ fi
 # We declare associative array (a hash), syntax is
 # declare -A var_name=(["key1"]="val1" ["key2"]="val2" ...)
 # echo ${var_name[key1]} # display: "val1"
-declare -A geoip_version=(["scalingo-24"]="1.6.12-6build1" ["scalingo-22"]="1.6.12-6build1")
-declare -A yajl_version=(["scalingo-24"]="2.1.0-5build1" ["scalingo-22"]="2.1.0-3build2")
-declare -A lmdb_version=(["scalingo-24"]="0.9.31-1build1" ["scalingo-22"]="0.9.24-1build2")
-declare -A libfuzzy_version=(["scalingo-24"]="2.14.1+git20180629.57fcfff-3build1" ["scalingo-22"]="2.14.1+git20180629.57fcfff-2")
-declare -A lua_version=(["scalingo-24"]="5.4.7-1" ["scalingo-22"]="5.3.6-1build1")
+declare -A geoip_version=(["scalingo-26"]="1.6.12-6build1" ["scalingo-24"]="1.6.12-6build1" ["scalingo-22"]="1.6.12-6build1")
+declare -A yajl_version=(["scalingo-26"]="2.1.0-5build1" ["scalingo-24"]="2.1.0-5build1" ["scalingo-22"]="2.1.0-3build2")
+declare -A lmdb_version=(["scalingo-26"]="0.9.31-1build2" ["scalingo-24"]="0.9.31-1build1" ["scalingo-22"]="0.9.24-1build2")
+declare -A libfuzzy_version=(["scalingo-26"]="2.14.1+git20180629.57fcfff-3build1" ["scalingo-24"]="2.14.1+git20180629.57fcfff-3build1" ["scalingo-22"]="2.14.1+git20180629.57fcfff-2")
+declare -A lua_version=(["scalingo-26"]="5.4.8-1" ["scalingo-24"]="5.4.7-1" ["scalingo-22"]="5.3.6-1build1")
 lua_major_minor_version=$(echo "${lua_version[$deps_stack]}" | cut -d "." -f1-2)
 
 tempdir=$(mktmpdir modsecurity)
