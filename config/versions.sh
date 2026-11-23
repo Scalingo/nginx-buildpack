@@ -1,6 +1,6 @@
 default_zlib_version="1.4"
 # Keep a version from nginx' Stable branch:
-default_nginx_version="1.30.7"
+default_nginx_version="1.30.8"
 default_modsecurity_version="3.0.17"
 default_modsecurity_nginx_version="1.0.4"
 default_modsecurity_coreruleset_version="4.25.2"
